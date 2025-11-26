@@ -111,6 +111,11 @@ def db_to_cable_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict
   #set wirecount
   for cable in cable_data:
     cable['wirecount'] = len(cable['wirelabels'])
+    cable['length'] = 100  # Default length
+    cable['length_unit'] = 'mm'  # Default length unit
+    cable['gauge'] = 0.5  # Default gauge
+    cable['gauge_unit'] = 'mm2'  # Default gauge unit
+    cable['color'] = 'WH' # Default color
   
   # Get the canonical sorted list of cable names
   sorted_cable_names = _get_sorted_unique_cable_names(net_table)

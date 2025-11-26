@@ -40,7 +40,7 @@ if __name__ == "__main__":
   # --- Component Filter ---
   # Set to a component designator (e.g., 'JB1') to only show connections to/from it.
   # Set to None to show all connections.
-  comp_filter = 'JB1'
+  comp_filter = None # Example: 'JB1'
 
   sql_to_yaml(db_path, output_path, comp_des_filter=comp_filter)
   
