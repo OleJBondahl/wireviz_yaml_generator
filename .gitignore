@@ -209,3 +209,8 @@ src/test.html
 src/test.svg
 src/test.png
 src/test.bom.tsv
+output/output.svg
+*.png
+*.html
+*.tsv
+*.sqbpro
