@@ -16,7 +16,7 @@ if __name__ == "__main__":
       print("❌ 'wireviz' executable not found in PATH. Please install WireViz and ensure it's accessible from the command line.")
       exit(1)
 
-  comp_filter = ['JB1', 'JB2', 'JB3', 'JB4', None]
+  comp_filter = ['JB1', 'JB2', 'JB3', 'JB4', None, 'BMU1', 'BMU2', 'BMU3', 'BMU4']
 
   for filter in comp_filter:
     output_filename_base = filter if filter else 'all'

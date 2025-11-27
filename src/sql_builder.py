@@ -111,6 +111,7 @@ def db_to_cable_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict
   #set wirecount
   for cable in cable_data:
     cable['wirecount'] = len(cable['wirelabels'])
+    cable['category'] = 'bundle'  # Default category
     cable['length'] = 100  # Default length
     cable['length_unit'] = 'mm'  # Default length unit
     cable['gauge'] = 0.5  # Default gauge
