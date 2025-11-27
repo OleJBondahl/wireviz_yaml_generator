@@ -1,0 +1,9 @@
+
+base_repo_path = "../juicebox_harness"
+
+
+db_path = "data/master.db"
+
+
+output_path = "drawings/src"
+drawings_path = "drawings"
