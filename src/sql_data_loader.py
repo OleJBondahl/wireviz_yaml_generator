@@ -19,13 +19,13 @@ def fetch_data(query: str, db_filepath: str) -> List[Dict[str, Any]]:
         sys.exit(1) # Exit the script because it cannot continue.
 
 
-def build_query(TABLE_NAME: str, query_type: str = "SELECT * ", where_clause: str = None) -> str:
+def build_query(TABLE_NAME: str, query_type: str = "SELECT * ", where_clause: str = "") -> str:
     query = query_type + " FROM " + TABLE_NAME
     if where_clause:
         query += " WHERE " + where_clause
     return query
 
-def fetch_table(table_name: str, db_filepath: str, where_clause: str = None) -> List[Dict[str, Any]]:
+def fetch_table(table_name: str, db_filepath: str, where_clause: str = "") -> List[Dict[str, Any]]:
     query = build_query(table_name, where_clause=where_clause)
     data = fetch_data(query, db_filepath)
     return data

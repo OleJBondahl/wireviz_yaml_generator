@@ -72,7 +72,7 @@ def format_connections(connection_data: List[Dict[str, Any]]) -> List[List[Dict[
     for conn in connection_data:
         from_node = {conn['from_name']: conn['from_pin']}
         to_node = {conn['to_name']: conn['to_pin']}
-        via_node = {conn['name']: conn['via_pin']}
+        via_node = {conn['via_name']: conn['via_pin']}
         formatted.append([from_node, via_node, to_node])
     return formatted
 

@@ -10,7 +10,7 @@ def _natural_sort_key(s: str):
     return [int(text) if text.isdigit() else text.lower() for text in re.split('([0-9]+)', s)]
 
 
-def db_to_connector_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict[str, Any]]:
+def db_to_connector_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
   designator_table = fetch_table("DesignatorTable", db_filepath)
   connector_table = fetch_table("ConnectorTable", db_filepath)
 
@@ -61,45 +61,27 @@ def db_to_connector_data(db_filepath: str, comp_des_filter: str = None) -> List[
   return conn_data
 
 
-def _get_sorted_unique_cable_names(net_table: List[Dict[str, Any]]) -> List[str]:
-    """
-    Extracts unique cable names from the net_table and sorts them using natural sorting
-    on the component and connector designators. This ensures a consistent order.
-    """
-    # First, sort the entire table to establish a definitive order.
-    net_table.sort(key=lambda x: (_natural_sort_key(x['comp_des_1']), _natural_sort_key(x['conn_des_1']), _natural_sort_key(x['comp_des_2']), _natural_sort_key(x['conn_des_2'])))
-    
-    # Then, extract unique cable names while preserving that order.
-    seen = set()
-    unique_names = []
-    for row in net_table:
-        name = f"{row['comp_des_1']}_{row['conn_des_1']}_{row['comp_des_2']}_{row['conn_des_2']}"
-        if name not in seen:
-            seen.add(name)
-            unique_names.append(name)
-    return unique_names
-
-
-def db_to_cable_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict[str, Any]]:
-  where_clause = None
+def db_to_cable_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+  where_clause = ""
   if comp_des_filter:
     # Select rows where the component is on either side of the connection
     where_clause = f"comp_des_1 = '{comp_des_filter}' OR comp_des_2 = '{comp_des_filter}'"
   
   net_table = fetch_table("NetTable", db_filepath, where_clause=where_clause)
-
+  cable_table = fetch_table("CableTable", db_filepath)
+  
   cable_data: List[Dict[str, Any]] = []
   for row in net_table:
     cable_row = {}
-    cable_row['cable_des'] = f"{row['comp_des_1']}_{row['conn_des_1']}_{row['comp_des_2']}_{row['conn_des_2']}"
+    cable_row['cable_des'] = row['cable_des']
     cable_row['wirelabels'] = row['net_name']
     cable_data.append(cable_row)
   
   #remove duplicates and aggregate wirelabels
   aggregated_data = {}
-  for cable in cable_data:
-    name = cable['cable_des']
-    wirelabel = cable['wirelabels']
+  for row in cable_data:
+    name = row['cable_des']
+    wirelabel = row['wirelabels']
     if name not in aggregated_data:
       aggregated_data[name] = {
         'name': name,
@@ -108,31 +90,24 @@ def db_to_cable_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict
     aggregated_data[name]['wirelabels'].append(wirelabel)
   cable_data = list(aggregated_data.values())
 
-  #set wirecount
-  for cable in cable_data:
-    cable['wirecount'] = len(cable['wirelabels'])
-    cable['category'] = 'bundle'  # Default category
-    cable['length'] = 100  # Default length
-    cable['length_unit'] = 'mm'  # Default length unit
-    cable['gauge'] = 0.5  # Default gauge
-    cable['gauge_unit'] = 'mm2'  # Default gauge unit
-    cable['color'] = 'WH' # Default color
-  
-  # Get the canonical sorted list of cable names
-  sorted_cable_names = _get_sorted_unique_cable_names(net_table)
-  cable_data.sort(key=lambda x: sorted_cable_names.index(x['name']))
-
-  #rename cable_des to W1, W2, ...
-  for i, cable in enumerate(cable_data):
-    cable['name'] = f"W{i+1}"
-  
-  
+  for row in cable_data:
+    row['wirecount'] = len(row['wirelabels'])
+    row['category'] = 'bundle'  # Default category
+    row['length_unit'] = 'mm'  # Default length unit
+    row['gauge_unit'] = 'mm2'  # Default gauge unit
+    row['color_code'] = 'DIN'
+    for table_row in cable_table:
+      if row['name'] == table_row['cable_des']:
+        row['length'] = table_row['length']
+        row['gauge'] = table_row['wire_gauge']
+        
+    #row['color'] = 'WH' # Default color
   
   return cable_data
 
 
-def db_to_connection_data(db_filepath: str, comp_des_filter: str = None) -> List[Dict[str, Any]]:
-  where_clause = None
+def db_to_connection_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+  where_clause = ""
   if comp_des_filter:
     # Select rows where the component is on either side of the connection
     where_clause = f"comp_des_1 = '{comp_des_filter}' OR comp_des_2 = '{comp_des_filter}'"
@@ -146,7 +121,7 @@ def db_to_connection_data(db_filepath: str, comp_des_filter: str = None) -> List
     connection_row = {}
     from_name = f"{row['comp_des_1']}-{row['conn_des_1']}"
     to_name = f"{row['comp_des_2']}-{row['conn_des_2']}"
-    via_name = f"{row['comp_des_1']}_{row['conn_des_1']}_{row['comp_des_2']}_{row['conn_des_2']}"
+    via_name = row['cable_des']
 
     # Manage pin numbering for cables
     if via_name not in cable_pin_counters:
@@ -162,15 +137,4 @@ def db_to_connection_data(db_filepath: str, comp_des_filter: str = None) -> List
     connection_row['via_pin'] = via_pin
 
     connection_data.append(connection_row)
-  
-  # Create a mapping from the original cable name ('via_name') to the new 'W' name.
-  # This ensures connections are grouped correctly under the same cable.
-  # Use the canonical sorting function to guarantee order matches the cable definitions.
-  unique_via_names = _get_sorted_unique_cable_names(net_table)
-  cable_name_map = {name: f"W{i+1}" for i, name in enumerate(unique_via_names)}
-
-  # Use the map to assign the correct 'W' name to each connection.
-  for connection in connection_data:
-    connection['name'] = cable_name_map[connection['via_name']]
-
   return connection_data

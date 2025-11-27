@@ -4,7 +4,7 @@ from yaml_builder import build_yaml_file
 import os
 
 
-def sql_to_yaml(db_filepath: str, yaml_filepath: str, comp_des_filter: str = None) -> None:
+def sql_to_yaml(db_filepath: str, yaml_filepath: str, comp_des_filter: str = "") -> None:
   
   connector_data = db_to_connector_data(db_filepath, comp_des_filter=comp_des_filter)
   cable_data = db_to_cable_data(db_filepath, comp_des_filter=comp_des_filter)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
   # --- Component Filter ---
   # Set to a component designator (e.g., 'JB1') to only show connections to/from it.
   # Set to None to show all connections.
-  comp_filter = None # Example: 'JB1'
+  comp_filter = "" # Example: 'JB1'
 
   sql_to_yaml(db_path, output_path, comp_des_filter=comp_filter)
   

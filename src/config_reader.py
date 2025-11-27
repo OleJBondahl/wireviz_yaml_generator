@@ -1,10 +1,11 @@
 import tomllib
-import os
+from pathlib import Path
+import sys
 
   
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(script_dir)
-CONFIG_FILE =  os.path.join(project_root, "config.toml")
+script_path = Path(__file__).resolve()
+project_root = script_path.parent.parent
+CONFIG_FILE = project_root / "config.toml"
 
 def load_config():
     try:
@@ -12,17 +13,24 @@ def load_config():
             config = tomllib.load(fp)
         return config
     except FileNotFoundError:
-        print(f"ERROR: Konfigurasjonsfilen ble ikke funnet på: {CONFIG_FILE}")
-        return {}
+        print(f"❌ ERROR: Configuration file not found at: {CONFIG_FILE}")
+        sys.exit(1)
 
 CONFIG = load_config()
 
-BASE_PATH = CONFIG.get("base_repo_path")
-DB_RELATIVE_PATH = CONFIG.get("db_path")
-OUTPUT_RELATIVE_DIR = CONFIG.get("output_path")
-DRAWINGS_RELATIVE_DIR = CONFIG.get("drawings_path")
+def get_config_value(key: str):
+    """Gets a value from the config or exits if it's missing."""
+    value = CONFIG.get(key)
+    if value is None:
+        print(f"❌ ERROR: Configuration key '{key}' not found in {CONFIG_FILE}")
+        sys.exit(1)
+    return value
 
-DB_PATH = os.path.join(BASE_PATH, DB_RELATIVE_PATH)
-OUTPUT_PATH = os.path.join(BASE_PATH, OUTPUT_RELATIVE_DIR)
-DRAWINGS_PATH = os.path.join(BASE_PATH, DRAWINGS_RELATIVE_DIR)
+BASE_PATH = get_config_value("base_repo_path")
+DB_RELATIVE_PATH = get_config_value("db_path")
+OUTPUT_RELATIVE_DIR = get_config_value("output_path")
+DRAWINGS_RELATIVE_DIR = get_config_value("drawings_path")
 
+DB_PATH = Path(BASE_PATH) / DB_RELATIVE_PATH
+OUTPUT_PATH = Path(BASE_PATH) / OUTPUT_RELATIVE_DIR
+DRAWINGS_PATH = Path(BASE_PATH) / DRAWINGS_RELATIVE_DIR
