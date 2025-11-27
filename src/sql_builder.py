@@ -1,16 +1,21 @@
 from typing import List, Dict, Any
 from sql_data_loader import fetch_table
 import re
+from pathlib import Path
 
 
-def _natural_sort_key(s: str):
+def _natural_sort_key(s: str | None):
     """
     Create a sort key for natural sorting (e.g., 'J10' comes after 'J2').
+    Handles None values to prevent TypeErrors.
     """
-    return [int(text) if text.isdigit() else text.lower() for text in re.split('([0-9]+)', s)]
+    if s is None:
+        return []  # Return an empty list for None to sort consistently
+    # Ensure the input is a string before splitting
+    return [int(text) if text.isdigit() else text.lower() for text in re.split('([0-9]+)', str(s))]
 
 
-def db_to_connector_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+def db_to_connector_data(db_filepath: str, output_path: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
   designator_table = fetch_table("DesignatorTable", db_filepath)
   connector_table = fetch_table("ConnectorTable", db_filepath)
 
@@ -48,7 +53,20 @@ def db_to_connector_data(db_filepath: str, comp_des_filter: str = "") -> List[Di
     if conn_mpn and conn_mpn in connector_table_map:
       mate_info = connector_table_map[conn_mpn]
       conn_row['pincount'] = mate_info['pincount']
-      conn_row['mpn'] = mate_info['mate_mpn']
+      mpn = mate_info['mate_mpn']
+      conn_row['mpn'] = mpn
+
+      # Check if the image file exists before adding it
+      # The image path is relative to the YAML file's location.
+      # The YAML is in `output_path`, so the image is in `output_path/../resources/`
+      image_path = Path(output_path).parent / "resources" / f"{mpn}.png"
+      if image_path.is_file():
+        conn_row['image'] = {
+            'src': f"../resources/{mpn}.png",
+            'caption': 'ISO view',
+            'height': 50
+        }
+
     else:
       # If no match is found, provide default values to prevent it from being deleted
       print(f"⚠️  Warning: MPN '{conn_mpn}' for connector '{conn_row['name']}' not found in ConnectorTable. Using default values.")

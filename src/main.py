@@ -26,6 +26,7 @@ if __name__ == "__main__":
     interface.sql_to_yaml(
         db_filepath=DB_PATH,
         yaml_filepath=yaml_filepath,
+        output_path=OUTPUT_PATH,
         comp_des_filter=filter  # Example: 'JB1'
     )
 
