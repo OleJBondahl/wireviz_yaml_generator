@@ -4,12 +4,12 @@ from yaml_builder import build_yaml_file
 import os
 
 
-def sql_to_yaml(db_filepath: str, yaml_filepath: str, output_path: str, comp_des_filter: str = "") -> None:
+def sql_to_yaml(db_filepath: str, yaml_filepath: str, output_path: str, cable_des_filter: str = "") -> None:
   
-  connector_data = db_to_connector_data(db_filepath, output_path, comp_des_filter=comp_des_filter)
-  cable_data = db_to_cable_data(db_filepath, comp_des_filter)
-  connection_data = db_to_connection_data(db_filepath, comp_des_filter)
-
+  connector_data = db_to_connector_data(db_filepath, output_path, cable_des_filter=cable_des_filter)
+  cable_data = db_to_cable_data(db_filepath, cable_des_filter=cable_des_filter)
+  connection_data = db_to_connection_data(db_filepath, cable_des_filter=cable_des_filter)
+  
   #call yaml builder
   build_yaml_file(
     connectors=connector_data,
@@ -42,5 +42,5 @@ if __name__ == "__main__":
   # Set to None to show all connections.
   comp_filter = "" # Example: 'JB1'
 
-  sql_to_yaml(db_path, output_path, output_path, comp_des_filter=comp_filter)
+  sql_to_yaml(db_path, output_path, output_path, cable_des_filter="W1")
   

@@ -15,14 +15,20 @@ def _natural_sort_key(s: str | None):
     return [int(text) if text.isdigit() else text.lower() for text in re.split('([0-9]+)', str(s))]
 
 
-def db_to_connector_data(db_filepath: str, output_path: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+def check_cable_existence(db_filepath: str, cable_des: str) -> bool:
+  """Checks if a cable designator exists in the NetTable."""
+  where_clause = f"cable_des = '{cable_des}'"
+  data = fetch_table("NetTable", db_filepath, where_clause=where_clause)
+  return bool(data)
+
+def db_to_connector_data(db_filepath: str, output_path: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
   designator_table = fetch_table("DesignatorTable", db_filepath)
   connector_table = fetch_table("ConnectorTable", db_filepath)
 
   # If filtering, determine the set of required connectors from the filtered NetTable
   required_connectors = set()
-  if comp_des_filter:
-    where_clause = f"comp_des_1 = '{comp_des_filter}' OR comp_des_2 = '{comp_des_filter}'"
+  if cable_des_filter:
+    where_clause = f"cable_des = '{cable_des_filter}'"
     filtered_net_table = fetch_table("NetTable", db_filepath, where_clause=where_clause)
     for row in filtered_net_table:
       required_connectors.add(f"{row['comp_des_1']}-{row['conn_des_1']}")
@@ -79,11 +85,10 @@ def db_to_connector_data(db_filepath: str, output_path: str, comp_des_filter: st
   return conn_data
 
 
-def db_to_cable_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+def db_to_cable_data(db_filepath: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
   where_clause = ""
-  if comp_des_filter:
-    # Select rows where the component is on either side of the connection
-    where_clause = f"comp_des_1 = '{comp_des_filter}' OR comp_des_2 = '{comp_des_filter}'"
+  if cable_des_filter:
+    where_clause = f"cable_des = '{cable_des_filter}'"
   
   net_table = fetch_table("NetTable", db_filepath, where_clause=where_clause)
   cable_table = fetch_table("CableTable", db_filepath)
@@ -118,18 +123,18 @@ def db_to_cable_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[s
       if row['name'] == table_row['cable_des']:
         row['length'] = table_row['length']
         row['gauge'] = table_row['wire_gauge']
+        row['notes'] = table_row['note']
+        
         
     #row['color'] = 'WH' # Default color
   
   return cable_data
 
 
-def db_to_connection_data(db_filepath: str, comp_des_filter: str = "") -> List[Dict[str, Any]]:
+def db_to_connection_data(db_filepath: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
   where_clause = ""
-  if comp_des_filter:
-    # Select rows where the component is on either side of the connection
-    where_clause = f"comp_des_1 = '{comp_des_filter}' OR comp_des_2 = '{comp_des_filter}'"
-
+  if cable_des_filter:
+    where_clause = f"cable_des = '{cable_des_filter}'"
   net_table = fetch_table("NetTable", db_filepath, where_clause=where_clause)
 
   connection_data: List[Dict[str, Any]] = []
