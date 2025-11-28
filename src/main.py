@@ -4,16 +4,18 @@ import subprocess
 import shutil
 from BuildFromSql import check_cable_existence # Import the new function
 import ReadConfig
-from BuildAttachments import create_bom
+from BuildAttachments import create_bom, create_labellist
+
 
 
 
 #----Options----
 CREATE_BOM = True
-CREATE_DRAWINGS = False
+CREATE_LABELS = True
+CREATE_DRAWINGS = True
 
-FROM_CABLE_NR = 1
-TO_CABLE_NR = 44
+FROM_CABLE_NR = 0
+TO_CABLE_NR = 50
 
 #---------------
 
@@ -43,6 +45,13 @@ if __name__ == "__main__":
   if CREATE_BOM:
     print("ℹ️  Creating BOM...")
     create_bom(DB_PATH, cable_filters, ATTACHMENTS_PATH)
+    print("✅  BOM created.")
+  
+  if CREATE_LABELS:
+    print("ℹ️  Creating LabelList...")
+    create_labellist(DB_PATH, cable_filters, ATTACHMENTS_PATH)
+    print("✅  LabelList created.")
+
 
 
   if CREATE_DRAWINGS:

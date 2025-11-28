@@ -6,6 +6,6 @@ db_path = "data/master.db"
 
 
 output_path = "drawings/src"
-drawings_path = "drawings"
+drawings_path = "drawings/harness"
 attachments_path = "attachments"
 

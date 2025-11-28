@@ -209,6 +209,8 @@ def create_bom(db_filepath: str, cable_des_filter: List[str], output_path: str) 
   bom_data = add_misc_bom_items(bom_data, "MiscBOM", output_path)
   output_to_xlsx(bom_data, "BOM", output_path)
 
+
+def create_labellist(db_filepath: str, cable_des_filter: List[str], output_path: str) -> None:
   label_data = db_to_labellist(db_filepath, cable_des_filter)
   output_to_xlsx(label_data, "LabelList", output_path)
 
