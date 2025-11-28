@@ -1,6 +1,6 @@
 #fetches data from choosen database, creates instances, calls yaml builder on instances
-from sql_builder import *
-from yaml_builder import build_yaml_file
+from BuildFromSql import *
+from BuildYaml import build_yaml_file
 import os
 
 

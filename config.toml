@@ -7,3 +7,5 @@ db_path = "data/master.db"
 
 output_path = "drawings/src"
 drawings_path = "drawings"
+attachments_path = "attachments"
+

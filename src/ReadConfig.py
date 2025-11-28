@@ -30,7 +30,11 @@ BASE_PATH = get_config_value("base_repo_path")
 DB_RELATIVE_PATH = get_config_value("db_path")
 OUTPUT_RELATIVE_DIR = get_config_value("output_path")
 DRAWINGS_RELATIVE_DIR = get_config_value("drawings_path")
+ATTACHMENTS_RELATIVE_DIR = get_config_value("attachments_path")
+
 
 DB_PATH = Path(BASE_PATH) / DB_RELATIVE_PATH
 OUTPUT_PATH = Path(BASE_PATH) / OUTPUT_RELATIVE_DIR
 DRAWINGS_PATH = Path(BASE_PATH) / DRAWINGS_RELATIVE_DIR
+ATTACHMENTS_PATH = Path(BASE_PATH) / ATTACHMENTS_RELATIVE_DIR
+

@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from sql_data_loader import fetch_table
+from LoadFromSql import fetch_table
 import re
 from pathlib import Path
 
