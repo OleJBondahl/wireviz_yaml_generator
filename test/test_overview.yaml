@@ -1,0 +1,30 @@
+connectors:
+  JB1:
+    pins: [J1,J2,J3]
+    show_pincount: false
+  JB2:
+    pins: [J1,J2,J3]
+    show_pincount: false
+  BMU1:
+    pins: [J3,J6,J11]
+    show_pincount: false
+cables:
+  W001:
+    wirecount: 1
+    show_wirenumbers: false
+    show_wirecount: false
+  W002:
+    wirecount: 1
+    show_wirenumbers: false
+    show_wirecount: false
+  W003:
+    wirecount: 1
+connections:
+  -
+    - JB1: J1
+    - W001: 1
+    - BMU1: J3
+  -
+    - JB1: J3
+    - W002: 1
+    - JB2: J1

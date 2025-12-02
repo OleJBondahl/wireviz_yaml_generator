@@ -23,8 +23,11 @@ def format_connectors(connector_data: List[Dict[str, Any]]) -> Dict[str, Dict[st
     Formats a list of connector dictionaries into the keyed dictionary
     structure required by WireViz.
     
-    Input: [{'name': 'JB1-J1', 'pincount': 4}, {'name': 'JB1-P1', 'pincount': 4}]
-    Output: {'JB1-J1': {'pincount': 4}, 'JB1-P1': {'pincount': 4}}
+    Args:
+        connector_data: A list of dictionaries, each representing a connector.
+
+    Returns:
+        A dictionary where keys are connector names and values are their attributes.
     """
     formatted_connectors = {}
     for connector in connector_data:
@@ -39,8 +42,11 @@ def format_cables(cable_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]
     Formats a list of cable dictionaries into the keyed dictionary
     structure required by WireViz.
     
-    Input: [{'name': 'W1', 'wirecount': 2}, {'name': 'W2', 'wirecount': 5}]
-    Output: {'W1': {'wirecount': 2}, 'W2': {'wirecount': 5}}
+    Args:
+        cable_data: A list of dictionaries, each representing a cable.
+
+    Returns:
+        A dictionary where keys are cable names and values are their attributes.
     """
     formatted_cables = {}
     for cable in cable_data:
@@ -55,17 +61,12 @@ def format_connections(connection_data: List[Dict[str, Any]]) -> List[List[Dict[
     Formats a list of connection dictionaries into the list of lists
     structure required by WireViz.
     
-    Input:
-    [
-        {'from_name': 'J1', 'from_pin': 1, 'to_name': 'P1', 'to_pin': 1, 'name': 'W1', 'via_pin': 1},
-        ...
-    ]
-    
-    Output:
-    [
-        [{'J1': 1}, {'W1': 1}, {'P1': 1}],
-        ...
-    ]
+    Args:
+        connection_data: A list of dictionaries, each defining a single wire's path.
+
+    Returns:
+        A list of lists, where each inner list represents a full connection
+        path (e.g., [from_node, via_node, to_node]).
     """
     formatted = []
     # Group connections by the cable they belong to
@@ -85,7 +86,14 @@ def build_yaml_file(
 ) -> None:
     """
     Takes lists of data for connectors, cables, and connections,
-    formats them, and writes the final WireViz YAML file.
+    formats them into the required WireViz structure, and writes the
+    final YAML file.
+
+    Args:
+        connectors: A list of connector data dictionaries.
+        cables: A list of cable data dictionaries.
+        connections: A list of connection data dictionaries.
+        yaml_filepath: The full path for the output YAML file.
     """
     final_data = {}
 

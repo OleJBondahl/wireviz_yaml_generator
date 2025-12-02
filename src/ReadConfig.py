@@ -8,6 +8,15 @@ project_root = script_path.parent.parent
 CONFIG_FILE = project_root / "config.toml"
 
 def load_config():
+    """
+    Loads the application configuration from the 'config.toml' file.
+
+    This function locates and parses the TOML configuration file. If the file
+    is not found, it prints an error and exits the application.
+
+    Returns:
+        A dictionary containing the loaded configuration settings.
+    """
     try:
         with open(CONFIG_FILE, mode="rb") as fp:
             config = tomllib.load(fp)
@@ -19,7 +28,15 @@ def load_config():
 CONFIG = load_config()
 
 def get_config_value(key: str):
-    """Gets a value from the config or exits if it's missing."""
+    """
+    Retrieves a specific value from the loaded configuration.
+
+    If the requested key is not found in the configuration, this function
+    prints an error message and exits the application.
+
+    Args:
+        key: The configuration key to retrieve.
+    """
     value = CONFIG.get(key)
     if value is None:
         print(f"❌ ERROR: Configuration key '{key}' not found in {CONFIG_FILE}")
@@ -37,4 +54,3 @@ DB_PATH = Path(BASE_PATH) / DB_RELATIVE_PATH
 OUTPUT_PATH = Path(BASE_PATH) / OUTPUT_RELATIVE_DIR
 DRAWINGS_PATH = Path(BASE_PATH) / DRAWINGS_RELATIVE_DIR
 ATTACHMENTS_PATH = Path(BASE_PATH) / ATTACHMENTS_RELATIVE_DIR
-

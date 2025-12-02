@@ -1,10 +1,25 @@
+"""
+Main script for generating wire harness documentation.
+
+This script orchestrates the generation of wiring diagrams, Bills of Materials (BOMs),
+and labels for a specified range of cables. It reads cable data from a
+database, generates YAML files compatible with WireViz, and then invokes
+the WireViz command-line tool to create the diagrams.
+
+The script's behavior can be configured using the global options to enable or
+disable the creation of BOMs, labels, and drawings, and to specify the
+range of cable numbers to process.
+"""
+
+
 import InterfaceSqlYaml
 import os
 import subprocess
 import shutil
 from BuildFromSql import check_cable_existence # Import the new function
 import ReadConfig
-from BuildAttachments import create_bom, create_labellist
+from BuildAttachments import create_bom, create_cablelabels, create_wirelabels
+from typing import List
 
 
 
@@ -32,10 +47,13 @@ if __name__ == "__main__":
   # Add the cable designators you want to generate diagrams for.
   # A separate YAML file will be created for each cable in this list.
   cable_filters = []
+  dont_include_filter: List[int] = [10, 21, 32, 43]
   #Add cable x to y to filter
   X = FROM_CABLE_NR
   Y = TO_CABLE_NR
   for i in range(X, Y + 1):
+    if i in dont_include_filter:
+      continue
     cable_filters.append(f"W{i:03d}")
 
   if not cable_filters:
@@ -48,9 +66,10 @@ if __name__ == "__main__":
     print("✅  BOM created.")
   
   if CREATE_LABELS:
-    print("ℹ️  Creating LabelList...")
-    create_labellist(DB_PATH, cable_filters, ATTACHMENTS_PATH)
-    print("✅  LabelList created.")
+    print("ℹ️  Creating LabelLists...")
+    create_cablelabels(DB_PATH, cable_filters, ATTACHMENTS_PATH)
+    create_wirelabels(DB_PATH, cable_filters, ATTACHMENTS_PATH)
+    print("✅  LabelLists created.")
 
 
 

@@ -16,12 +16,37 @@ def _natural_sort_key(s: str | None):
 
 
 def check_cable_existence(db_filepath: str, cable_des: str) -> bool:
-  """Checks if a cable designator exists in the NetTable."""
+  """
+  Checks if a cable designator exists in the NetTable of the database.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des: The cable designator to check for (e.g., 'W001').
+
+  Returns:
+      True if the cable exists, False otherwise.
+  """
   where_clause = f"cable_des = '{cable_des}'"
   data = fetch_table("NetTable", db_filepath, where_clause=where_clause)
   return bool(data)
 
 def db_to_connector_data(db_filepath: str, output_path: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
+  """
+  Fetches and formats connector data from the database for a specific cable.
+
+  This function retrieves connector information from the DesignatorTable and
+  ConnectorTable. It filters for connectors relevant to the specified cable,
+  sorts them, and enriches the data with details like pincount, MPN, and
+  image paths.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      output_path: The base output directory, used to resolve relative image paths.
+      cable_des_filter: The designator of the cable to filter by.
+
+  Returns:
+      A list of dictionaries, each representing a connector formatted for WireViz.
+  """
   designator_table = fetch_table("DesignatorTable", db_filepath)
   connector_table = fetch_table("ConnectorTable", db_filepath)
 
@@ -46,8 +71,12 @@ def db_to_connector_data(db_filepath: str, output_path: str, cable_des_filter: s
   conn_data: List[Dict[str, Any]] = []
   for row in designator_table:
     conn_row = {}
-    conn_row['name'] = f"{row['comp_des']}-{row['conn_des']}"
+    if not row['conn_des']:
+      conn_row['name'] = f"{row['comp_des']}"
+    else:
+      conn_row['name'] = f"{row['comp_des']}-{row['conn_des']}"
     conn_row['conn_mpn'] = row['conn_mpn']
+
     conn_data.append(conn_row)
 
   # Create a lookup map for faster access to connector table data
@@ -61,6 +90,12 @@ def db_to_connector_data(db_filepath: str, output_path: str, cable_des_filter: s
       conn_row['pincount'] = mate_info['pincount']
       mpn = mate_info['mate_mpn']
       conn_row['mpn'] = mpn
+      pin_mpn = mate_info['pin_mpn']
+      if 'Wire Ferrule' in pin_mpn:
+        conn_row['notes'] = 'Terminate Wires in Wire Ferrule'
+        conn_row['hide_disconnected_pins'] = True
+        conn_row['show_pincount'] = False
+        conn_row['mpn'] = None
 
       # Check if the image file exists before adding it
       # The image path is relative to the YAML file's location.
@@ -86,6 +121,21 @@ def db_to_connector_data(db_filepath: str, output_path: str, cable_des_filter: s
 
 
 def db_to_cable_data(db_filepath: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
+  """
+  Fetches and formats cable data from the database.
+
+  This function aggregates wire information from the NetTable to define the
+  properties of a cable bundle, such as its wire count and wire labels. It
+  also merges in physical properties like gauge and notes from the CableTable.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: The designator of the cable to fetch data for.
+
+  Returns:
+      A list containing a single dictionary that represents the cable
+      bundle formatted for WireViz.
+  """
   where_clause = ""
   if cable_des_filter:
     where_clause = f"cable_des = '{cable_des_filter}'"
@@ -116,22 +166,37 @@ def db_to_cable_data(db_filepath: str, cable_des_filter: str = "") -> List[Dict[
   for row in cable_data:
     row['wirecount'] = len(row['wirelabels'])
     row['category'] = 'bundle'  # Default category
-    row['length_unit'] = 'mm'  # Default length unit
+    #row['length_unit'] = 'mm'  # Default length unit
     row['gauge_unit'] = 'mm2'  # Default gauge unit
-    row['color_code'] = 'DIN'
+    #row['color_code'] = 'DIN'
+    #row['color'] = 'WH'
     for table_row in cable_table:
       if row['name'] == table_row['cable_des']:
-        row['length'] = table_row['length']
+        #row['length'] = table_row['length']
         row['gauge'] = table_row['wire_gauge']
         row['notes'] = table_row['note']
         
         
-    #row['color'] = 'WH' # Default color
+   
   
   return cable_data
 
 
 def db_to_connection_data(db_filepath: str, cable_des_filter: str = "") -> List[Dict[str, Any]]:
+  """
+  Fetches and formats the individual wire connections for a specific cable.
+
+  This function reads the NetTable to determine the start and end points for
+  each wire within a cable. It sorts the connections to ensure a consistent
+  pinout in the final diagram.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: The designator of the cable to fetch connections for.
+
+  Returns:
+      A list of dictionaries, where each dictionary defines a single wire's path.
+  """
   where_clause = ""
   if cable_des_filter:
     where_clause = f"cable_des = '{cable_des_filter}'"
@@ -140,10 +205,18 @@ def db_to_connection_data(db_filepath: str, cable_des_filter: str = "") -> List[
   connection_data: List[Dict[str, Any]] = []
   cable_pin_counters = {}
 
+  net_table.sort(key=lambda x: (x['cable_des'], x['comp_des_1'], x['conn_des_1'], x['pin_1']))
+
   for row in net_table:
     connection_row = {}
-    from_name = f"{row['comp_des_1']}-{row['conn_des_1']}"
-    to_name = f"{row['comp_des_2']}-{row['conn_des_2']}"
+    if not row['conn_des_1']:
+      from_name = f"{row['comp_des_1']}"
+    else:
+      from_name = f"{row['comp_des_1']}-{row['conn_des_1']}"
+    if not row['conn_des_2']:
+      to_name = f"{row['comp_des_2']}"
+    else:
+      to_name = f"{row['comp_des_2']}-{row['conn_des_2']}"
     via_name = row['cable_des']
 
     # Manage pin numbering for cables
@@ -160,4 +233,5 @@ def db_to_connection_data(db_filepath: str, cable_des_filter: str = "") -> List[
     connection_row['via_pin'] = via_pin
 
     connection_data.append(connection_row)
+
   return connection_data

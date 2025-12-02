@@ -5,6 +5,20 @@ import os
 
 
 def sql_to_yaml(db_filepath: str, yaml_filepath: str, output_path: str, cable_des_filter: str = "") -> None:
+  """
+  Orchestrates the conversion of SQL database entries to a WireViz YAML file.
+
+  This function fetches data for connectors, cables, and connections from the
+  database based on a cable designator filter. It then passes this data to
+  the YAML builder to generate the final output file.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      yaml_filepath: The desired file path for the output YAML file.
+      output_path: The base output directory, used for resolving related file paths.
+      cable_des_filter: The specific cable designator (e.g., "W001") to generate
+                        the diagram for.
+  """
   
   connector_data = db_to_connector_data(db_filepath, output_path, cable_des_filter=cable_des_filter)
   cable_data = db_to_cable_data(db_filepath, cable_des_filter=cable_des_filter)

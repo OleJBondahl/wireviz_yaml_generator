@@ -1,25 +1,24 @@
 from typing import List, Dict, Any
 from LoadFromSql import fetch_table
 
-
-
-
-
-'''
-Builds BOM and label list for the entire list of cables
-Output xlsx files
-
-BOM layout:
-Description, mpn, manufacturer, quantity, unit 
-
-Types of bom rows:
-Connectors
-Pins
-Wires
-Misc (get from misc csv file)
-'''
-
 def db_to_BOM(db_filepath: str, cable_des_filter: List[str]):
+  """
+  Generates a Bill of Materials (BOM) from the database for specified cables.
+
+  This function fetches component, connector, and netlist data from the
+  database, calculates the required quantities of connectors and wires based
+  on the provided cable designator filter, and compiles them into a
+  structured BOM list.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to include in the BOM.
+                        If empty, all cables are included.
+
+  Returns:
+      A list of dictionaries, where each dictionary represents a row in the BOM
+      and contains keys like 'mpn', 'description', 'manufacturer', 'quantity', and 'unit'.
+  """
   #Load from sql, filter out rows by cable_des_filter
   net_table = fetch_table("NetTable", db_filepath)
   cable_table = fetch_table("CableTable", db_filepath)
@@ -141,6 +140,17 @@ def db_to_BOM(db_filepath: str, cable_des_filter: List[str]):
 
   #load MiscBomItems.csv into List[dict]
 def add_misc_bom_items(bom_data: List[Dict[str, Any]], filename: str, output_path: str) -> List[Dict[str, Any]]:
+  """
+  Reads miscellaneous items from a CSV file and adds them to the BOM.
+
+  Args:
+      bom_data: The existing list of BOM data dictionaries.
+      filename: The name of the CSV file (without extension) to read from.
+      output_path: The directory where the CSV file is located.
+
+  Returns:
+      The updated list of BOM data dictionaries including the miscellaneous items.
+  """
   import csv
   import os
   misc_data = []
@@ -153,7 +163,21 @@ def add_misc_bom_items(bom_data: List[Dict[str, Any]], filename: str, output_pat
   return bom_data
     
 
-def db_to_labellist(db_filepath: str, cable_des_filter: List[str]):
+def db_to_cablelabels(db_filepath: str, cable_des_filter: List[str]):
+  """
+  Generates a list of cable labels from the database.
+
+  Each cable has labels for its start and end points, typically indicating
+  the connecting component and the cable designator itself.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to generate labels for.
+
+  Returns:
+      A list of strings, where each string is a formatted label ready for
+      printing.
+  """
   #Load from sql, filter out rows by cable_des_filter
   net_table = fetch_table("NetTable", db_filepath)
   cable_table = fetch_table("CableTable", db_filepath)
@@ -174,8 +198,14 @@ def db_to_labellist(db_filepath: str, cable_des_filter: List[str]):
   for cable, label_list in cable_dict.items():
     for row in net_table:
       if row['cable_des'] == cable:
-        label_1 = row['comp_des_1'] + '-' + row['conn_des_1']
-        label_2 = row['comp_des_2'] + '-' + row['conn_des_2']
+        if not row['conn_des_1']:
+          label_1 = row['comp_des_1'] + ' : ' + cable
+        else:
+          label_1 = row['comp_des_1'] + '-' + row['conn_des_1'] + ' : ' + cable
+        if not row['conn_des_2']:
+          label_2 = row['comp_des_2'] + ' : ' + cable
+        else:
+          label_2 = row['comp_des_2'] + '-' + row['conn_des_2'] + ' : ' + cable
         if label_1 not in label_list:
           label_list.append(label_1)
         if label_2 not in label_list:
@@ -183,19 +213,72 @@ def db_to_labellist(db_filepath: str, cable_des_filter: List[str]):
 
   # add cable dict to label data
   label_data: List[str] = []
-  label_data.append("Cable and Connector Labels:")
+  label_data.append("Cable Labels:")
   for cable, label_list in cable_dict.items():
-    label_data.append(cable)
+    #label_data.append(cable)
     for label in label_list:
       label_data.append(label)
 
   return label_data
 
+def db_to_wirelabels(db_filepath: str, cable_des_filter: List[str]):
+  """
+  Generates a list of individual wire labels from the database.
 
+  These labels are for the ends of each wire, specifying the connector
+  and pin number it terminates at.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to generate labels for.
+
+  Returns:
+      A list of strings, where each string is a formatted wire label ready
+      for printing.
+  """
+  #Load from sql, filter out rows by cable_des_filter
+  net_table = fetch_table("NetTable", db_filepath)
+  cable_table = fetch_table("CableTable", db_filepath)
+
+  if cable_des_filter:
+    net_table = [row for row in net_table if row['cable_des'] in cable_des_filter]
+    cable_table = [row for row in cable_table if row['cable_des'] in cable_des_filter]
+
+  net_table.sort(key=lambda x: (x['cable_des'], x['comp_des_1'], x['conn_des_1'], x['pin_1']))
+  
+  #build wirelabels as conn_des : pin
+  wire_data: List[str] = []
+  wire_data.append("Wire Labels:")
+  previous_cable = None
+  for row in net_table:
+    current_cable = row['cable_des']
+    if current_cable != previous_cable:
+      wire_data.append('Labels: ' + current_cable)
+      previous_cable = current_cable
+    if not row['conn_des_1']:
+      wire_data.append(row['comp_des_1'] + ' : ' + str(row['pin_1']))
+    else:
+      wire_data.append(row['conn_des_1'] + ' : ' + str(row['pin_1']))
+    if not row['conn_des_2']:
+      wire_data.append(row['comp_des_2'] + ' : ' + str(row['pin_2']))
+    else:
+      wire_data.append(row['conn_des_2'] + ' : ' + str(row['pin_2']))
+
+  return wire_data
+
+  
 
 
   #output List[dict] to xslx
 def output_to_xlsx(data: List[Any], filename: str, output_path: str) -> None:
+  """
+  Writes a list of data to an XLSX file.
+
+  Args:
+      data: A list of dictionaries or a simple list to be written to the file.
+      filename: The desired name of the output file (without extension).
+      output_path: The directory where the XLSX file will be saved.
+  """
   import pandas as pd
   import os
   
@@ -205,14 +288,43 @@ def output_to_xlsx(data: List[Any], filename: str, output_path: str) -> None:
 
 
 def create_bom(db_filepath: str, cable_des_filter: List[str], output_path: str) -> None:
+  """
+  Orchestrates the creation of the complete Bill of Materials (BOM).
+
+  This function calls other helpers to generate the main BOM from the database,
+  append miscellaneous items, and save the final result to an XLSX file.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to include.
+      output_path: The directory to save the final BOM.xlsx file.
+  """
   bom_data = db_to_BOM(db_filepath, cable_des_filter)
   bom_data = add_misc_bom_items(bom_data, "MiscBOM", output_path)
   output_to_xlsx(bom_data, "BOM", output_path)
 
 
-def create_labellist(db_filepath: str, cable_des_filter: List[str], output_path: str) -> None:
-  label_data = db_to_labellist(db_filepath, cable_des_filter)
-  output_to_xlsx(label_data, "LabelList", output_path)
+def create_cablelabels(db_filepath: str, cable_des_filter: List[str], output_path: str) -> None:
+  """
+  Generates and saves a list of cable labels to an XLSX file.
+
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to include.
+      output_path: The directory to save the final Cablelabels.xlsx file.
+  """
+  cablelabels = db_to_cablelabels(db_filepath, cable_des_filter)
+  output_to_xlsx(cablelabels, "Cablelabels", output_path)
 
 
+def create_wirelabels(db_filepath: str, cable_des_filter: List[str], output_path: str) -> None:
+  """
+  Generates and saves a list of wire labels to an XLSX file.
 
+  Args:
+      db_filepath: The file path to the SQLite database.
+      cable_des_filter: A list of cable designators to include.
+      output_path: The directory to save the final WireLabels.xlsx file.
+  """
+  wirelabels = db_to_wirelabels(db_filepath, cable_des_filter)
+  output_to_xlsx(wirelabels, "WireLabels", output_path)
