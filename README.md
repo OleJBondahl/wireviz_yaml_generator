@@ -1,5 +1,7 @@
 # WireViz YAML Generator
 
+More docs at: https://olejbondahl.github.io/wireviz_yaml_generator/
+
 An automated pipeline tool that transforms electrical design data from an SQLite database into professional wiring diagrams (using [WireViz](https://github.com/formatc1702/WireViz)) and manufacturing attachments (BOM, Labels).
 
 ## 🚀 Features
