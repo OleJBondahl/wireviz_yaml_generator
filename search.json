@@ -1,0 +1,93 @@
+[
+  {
+    "objectID": "system_architecture.html",
+    "href": "system_architecture.html",
+    "title": "System Architecture",
+    "section": "",
+    "text": "The WireViz YAML Generator is architected to separate Data Access, Business Logic, and Presentation. This ensures maintainability, testability, and type safety."
+  },
+  {
+    "objectID": "system_architecture.html#repository-pattern",
+    "href": "system_architecture.html#repository-pattern",
+    "title": "System Architecture",
+    "section": "Repository Pattern",
+    "text": "Repository Pattern\nSQL logic is confined to data_access.py. The rest of the application works with objects (ConnectorRow), never cursor or sql."
+  },
+  {
+    "objectID": "system_architecture.html#functional-core-imperative-shell",
+    "href": "system_architecture.html#functional-core-imperative-shell",
+    "title": "System Architecture",
+    "section": "Functional Core, Imperative Shell",
+    "text": "Functional Core, Imperative Shell\n\nShell: main.py and workflow_manager.py handle I/O (reading files, printing status).\nCore: transformations.py is purely functional. It takes data in and returns data out, without side effects."
+  },
+  {
+    "objectID": "system_architecture.html#dependency-injection",
+    "href": "system_architecture.html#dependency-injection",
+    "title": "System Architecture",
+    "section": "Dependency Injection",
+    "text": "Dependency Injection\nWorkflowManager receives its SqliteDataSource instance from main.py. This allows swapping the database for a mock during testing (if needed in the future)."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "WireViz YAML Generator Documentation",
+    "section": "",
+    "text": "Welcome to the documentation for the WireViz YAML Generator."
+  },
+  {
+    "objectID": "index.html#overview",
+    "href": "index.html#overview",
+    "title": "WireViz YAML Generator Documentation",
+    "section": "Overview",
+    "text": "Overview\nThis project generates WireViz YAML files from a database of connections and components."
+  },
+  {
+    "objectID": "index.html#contents",
+    "href": "index.html#contents",
+    "title": "WireViz YAML Generator Documentation",
+    "section": "Contents",
+    "text": "Contents\n\nSystem Architecture\nData Flow"
+  },
+  {
+    "objectID": "data_flow.html",
+    "href": "data_flow.html",
+    "title": "Data Flow Documentation",
+    "section": "",
+    "text": "This document explains the transformation pipeline from Source (Database) to Destination (Files)."
+  },
+  {
+    "objectID": "data_flow.html#stage-1-raw-data-intermediate",
+    "href": "data_flow.html#stage-1-raw-data-intermediate",
+    "title": "Data Flow Documentation",
+    "section": "Stage 1: Raw Data (Intermediate)",
+    "text": "Stage 1: Raw Data (Intermediate)\n\nSource: SqliteDataSource\nFormat: NetRow, CableRow\nCharacteristics: Direct 1:1 mapping of database tables. Loose typing (just strings/ints)."
+  },
+  {
+    "objectID": "data_flow.html#stage-2-domain-data-enriched",
+    "href": "data_flow.html#stage-2-domain-data-enriched",
+    "title": "Data Flow Documentation",
+    "section": "Stage 2: Domain Data (Enriched)",
+    "text": "Stage 2: Domain Data (Enriched)\n\nSource: transformations.py\nFormat: Connector, Cable, Connection\nCharacteristics:\n\nRich types.\nResolved logic (e.g., via_pin calculated).\nPhysical attributes applied (Image paths resolved)."
+  },
+  {
+    "objectID": "data_flow.html#stage-3-output-data-serialized",
+    "href": "data_flow.html#stage-3-output-data-serialized",
+    "title": "Data Flow Documentation",
+    "section": "Stage 3: Output Data (Serialized)",
+    "text": "Stage 3: Output Data (Serialized)\n\nSource: BuildYaml.py / excel_writer.py\nFormat: JSON-compatible Dictionaries / Pandas DataFrames.\nCharacteristics: Strictly formatted to meet external tool requirements (WireViz Schema)."
+  },
+  {
+    "objectID": "data_flow.html#cable-aggregation",
+    "href": "data_flow.html#cable-aggregation",
+    "title": "Data Flow Documentation",
+    "section": "Cable Aggregation",
+    "text": "Cable Aggregation\nMultiple NetRow entries sharing the same cable_des are grouped into a single Cable object. * Input: 10 NetRows with cable_des=\"W001\" * Output: 1 Cable object with wire_count=10."
+  },
+  {
+    "objectID": "data_flow.html#connector-resolution",
+    "href": "data_flow.html#connector-resolution",
+    "title": "Data Flow Documentation",
+    "section": "Connector Resolution",
+    "text": "Connector Resolution\nConnectors are identified by the composite key Component + Pin. The system queries the DesignatorTable to find the Manufacturer Part Number (MPN) for J1-X1, then looks up that MPN in the ConnectorTable to get metadata like “Pincount” and “Image”."
+  }
+]
