@@ -1,56 +1,73 @@
+"""
+Configuration Loader.
+
+This module loads global settings from `config.toml`.
+It provides typesafe access to paths for the Database, Output, 
+and Template directories.
+"""
+
 import tomllib
 from pathlib import Path
-import sys
+from typing import Any, Dict, Optional
+from exceptions import ConfigurationError
 
-  
-script_path = Path(__file__).resolve()
-project_root = script_path.parent.parent
-CONFIG_FILE = project_root / "config.toml"
+# Define paths relative to this script
+SCRIPT_PATH = Path(__file__).resolve()
+PROJECT_ROOT = SCRIPT_PATH.parent.parent
+CONFIG_FILE = PROJECT_ROOT / "config.toml"
 
-def load_config():
+class ConfigLoader:
     """
-    Loads the application configuration from the 'config.toml' file.
-
-    This function locates and parses the TOML configuration file. If the file
-    is not found, it prints an error and exits the application.
-
-    Returns:
-        A dictionary containing the loaded configuration settings.
+    Handles loading and accessing configuration settings.
+    Initialized explicitly to make testing easier (avoids import side-effects).
     """
-    try:
-        with open(CONFIG_FILE, mode="rb") as fp:
-            config = tomllib.load(fp)
-        return config
-    except FileNotFoundError:
-        print(f"❌ ERROR: Configuration file not found at: {CONFIG_FILE}")
-        sys.exit(1)
+    _instance: Optional['ConfigLoader'] = None
+    _config: Dict[str, Any] = {}
 
-CONFIG = load_config()
+    @classmethod
+    def get_instance(cls) -> 'ConfigLoader':
+        """Singleton accessor."""
+        if cls._instance is None:
+            cls._instance = ConfigLoader()
+            cls._instance._load()
+        return cls._instance
 
-def get_config_value(key: str):
-    """
-    Retrieves a specific value from the loaded configuration.
+    def _load(self) -> None:
+        """Loads the configuration from file."""
+        try:
+            with open(CONFIG_FILE, mode="rb") as fp:
+                self._config = tomllib.load(fp)
+        except FileNotFoundError:
+            raise ConfigurationError(f"Configuration file not found at: {CONFIG_FILE}")
 
-    If the requested key is not found in the configuration, this function
-    prints an error message and exits the application.
+    def get_value(self, key: str) -> Any:
+        """
+        Retrieves a specific value from the configuration.
+        
+        Raises:
+            ConfigurationError: If key is missing.
+        """
+        value = self._config.get(key)
+        if value is None:
+            raise ConfigurationError(f"Configuration key '{key}' not found in {CONFIG_FILE}")
+        return value
 
-    Args:
-        key: The configuration key to retrieve.
-    """
-    value = CONFIG.get(key)
-    if value is None:
-        print(f"❌ ERROR: Configuration key '{key}' not found in {CONFIG_FILE}")
-        sys.exit(1)
-    return value
+    @property
+    def base_path(self) -> Path:
+        return Path(str(self.get_value("base_repo_path")))
 
-BASE_PATH = get_config_value("base_repo_path")
-DB_RELATIVE_PATH = get_config_value("db_path")
-OUTPUT_RELATIVE_DIR = get_config_value("output_path")
-DRAWINGS_RELATIVE_DIR = get_config_value("drawings_path")
-ATTACHMENTS_RELATIVE_DIR = get_config_value("attachments_path")
+    @property
+    def db_path(self) -> Path:
+        return self.base_path / str(self.get_value("db_path"))
 
+    @property
+    def output_path(self) -> Path:
+        return self.base_path / str(self.get_value("output_path"))
 
-DB_PATH = Path(BASE_PATH) / DB_RELATIVE_PATH
-OUTPUT_PATH = Path(BASE_PATH) / OUTPUT_RELATIVE_DIR
-DRAWINGS_PATH = Path(BASE_PATH) / DRAWINGS_RELATIVE_DIR
-ATTACHMENTS_PATH = Path(BASE_PATH) / ATTACHMENTS_RELATIVE_DIR
+    @property
+    def drawings_path(self) -> Path:
+        return self.base_path / str(self.get_value("drawings_path"))
+
+    @property
+    def attachments_path(self) -> Path:
+        return self.base_path / str(self.get_value("attachments_path"))

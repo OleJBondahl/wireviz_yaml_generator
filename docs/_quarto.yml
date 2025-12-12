@@ -1,0 +1,20 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "WireViz YAML Generator"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - system_architecture.qmd
+      - data_flow.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
+    html-math-method: katex
+    css: styles.css

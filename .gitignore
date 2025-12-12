@@ -214,5 +214,9 @@ __marimo__/
 *.sqbpro
 *.svg
 
-/.quarto/
+# Quarto
+.quarto/
+docs/_site/
+docx/
+_site/
 **/*.quarto_ipynb

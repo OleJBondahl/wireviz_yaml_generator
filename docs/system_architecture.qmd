@@ -1,0 +1,65 @@
+---
+title: "System Architecture"
+date: today
+author: "WireViz Generator Team"
+---
+
+# Overview
+
+The **WireViz YAML Generator** is architected to separate **Data Access**, **Business Logic**, and **Presentation**. This ensures maintainability, testability, and type safety.
+
+# Component Diagram
+
+The following diagram illustrates the high-level components and their dependencies.
+
+```{mermaid}
+graph TD
+    User([User / CLI]) --> Main[src/main.py]
+    
+    subgraph "Core Application"
+        Main --> WM[Workflow Manager]
+        WM --> Config[Config Loader]
+        WM --> Repo[Data Access Repo]
+        WM --> Logic[Transformation Engine]
+    end
+    
+    subgraph "Infrastructure"
+        Repo --> DB[(SQLite Database)]
+        Logic --> Images[Image Resources]
+    end
+    
+    subgraph "Output Adapters"
+        WM --> YAML_Build[BuildYaml View]
+        WM --> XLSX_Build[Excel Writer]
+    end
+    
+    subgraph "External Tools"
+        YAML_Build --> WV[WireViz CLI]
+    end
+    
+    WV --> Diagrams[PNG/SVG Drawings]
+    XLSX_Build --> Spreadsheets[BOM / Labels]
+```
+
+# Module Responsibilities
+
+| Module | Responsibility | Type |
+|--------|----------------|------|
+| `main.py` | Entry point. Wires dependencies. Handles unexpected errors. | Script |
+| `workflow_manager.py` | Implementation of Use Cases (Generate BOM, Generate Diagram). | Orchestrator |
+| `data_access.py` | Abstraction over SQL. Returns immutable Data Classes. | Repository |
+| `transformations.py` | Pure Business Logic. Filters, Enriches, Validates. | Functional Core |
+| `models.py` | Type definitions (`Connector`, `Cable`, `Connection`). | Domain |
+| `BuildYaml.py` | Converts Domain Objects to WireViz Dictionary format. | View |
+
+# Key Design Patterns
+
+## Repository Pattern
+SQL logic is confined to `data_access.py`. The rest of the application works with objects (`ConnectorRow`), never `cursor` or `sql`.
+
+## Functional Core, Imperative Shell
+*   **Shell**: `main.py` and `workflow_manager.py` handle I/O (reading files, printing status).
+*   **Core**: `transformations.py` is purely functional. It takes data in and returns data out, without side effects.
+
+## Dependency Injection
+`WorkflowManager` receives its `SqliteDataSource` instance from `main.py`. This allows swapping the database for a mock during testing (if needed in the future).

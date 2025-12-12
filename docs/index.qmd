@@ -1,0 +1,14 @@
+---
+title: "WireViz YAML Generator Documentation"
+---
+
+Welcome to the documentation for the WireViz YAML Generator.
+
+## Overview
+
+This project generates WireViz YAML files from a database of connections and components.
+
+## Contents
+
+*   [System Architecture](system_architecture.qmd)
+*   [Data Flow](data_flow.qmd)

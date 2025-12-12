@@ -1,0 +1,72 @@
+---
+title: "Data Flow Documentation"
+date: today
+author: "WireViz Generator Team"
+---
+
+This document explains the transformation pipeline from Source (Database) to Destination (Files).
+
+# Data Pipeline
+The application processes data in a linear pipeline.
+
+```{mermaid}
+sequenceDiagram
+    participant DB as SQLite DB
+    participant Repo as Data Access
+    participant Core as Transformations
+    participant View as Builders
+    participant FS as File System
+
+    Note over DB, FS: Step 1: Ingestion
+    Repo->>DB: SELECT * FROM NetTable
+    DB-->>Repo: Raw Rows
+    Repo->>Repo: Map to NetRow (Dataclass)
+    
+    Note over DB, FS: Step 2: Logic Application
+    Repo->>Core: List[NetRow], List[ConnectorRow]
+    Core->>Core: Filter Unused Components
+    Core->>Core: Enrich with MPNs & Images
+    Core->>Core: Sort & Assign Pin Numbers
+    
+    Note over DB, FS: Step 3: View Generation
+    Core->>View: List[Connector], List[Cable]
+    
+    alt YAML Path
+        View->>View: Convert Objects to WireViz Dicts
+        View->>FS: Write .yaml file
+    else Excel Path
+        View->>View: Format for Pandas DataFrame
+        View->>FS: Write .xlsx file
+    end
+```
+
+# Data Stages
+
+## Stage 1: Raw Data (Intermediate)
+*   **Source**: `SqliteDataSource`
+*   **Format**: `NetRow`, `CableRow`
+*   **Characteristics**: Direct 1:1 mapping of database tables. Loose typing (just strings/ints).
+
+## Stage 2: Domain Data (Enriched)
+*   **Source**: `transformations.py`
+*   **Format**: `Connector`, `Cable`, `Connection`
+*   **Characteristics**: 
+    *   Rich types.
+    *   Resolved logic (e.g., `via_pin` calculated).
+    *   Physical attributes applied (Image paths resolved).
+
+## Stage 3: Output Data (Serialized)
+*   **Source**: `BuildYaml.py` / `excel_writer.py`
+*   **Format**: JSON-compatible Dictionaries / Pandas DataFrames.
+*   **Characteristics**: Strictly formatted to meet external tool requirements (WireViz Schema).
+
+# Transformation Logic Details
+
+## Cable Aggregation
+Multiple `NetRow` entries sharing the same `cable_des` are grouped into a single `Cable` object.
+*   **Input**: 10 `NetRow`s with `cable_des="W001"`
+*   **Output**: 1 `Cable` object with `wire_count=10`.
+
+## Connector Resolution
+Connectors are identified by the composite key `Component` + `Pin`.
+The system queries the `DesignatorTable` to find the Manufacturer Part Number (MPN) for `J1-X1`, then looks up that MPN in the `ConnectorTable` to get metadata like "Pincount" and "Image".

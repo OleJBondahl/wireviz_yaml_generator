@@ -1,114 +1,158 @@
+"""
+YAML View Layer.
+
+This module is responsible for complying with the WireViz YAML schema.
+It acts as a 'View' layer, converting internal Domain Models (`Connector`,
+`Cable`, `Connection`) into the specific dictionary structure that WireViz
+expects for generation.
+
+It uses Pure Functions for conversion to ensure testability.
+"""
+
 import yaml
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from models import Connector, Cable, Connection
 
+# --- Pure Conversion Functions ---
 
-def _clean_data(d: Any) -> Any:
+def _clean_dict(d: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Recursively removes fields that are None, or are empty lists/dictionaries.
-    WireViz ignores these, but cleaning them up makes the YAML file more readable.
+    Recursively removes None values and empty containers from a dictionary.
+    
+    This results in a cleaner YAML file (omitting fields that aren't set),
+    which is preferred by WireViz.
     """
-    if isinstance(d, dict):
-        return {
-            k: _clean_data(v)
-            for k, v in d.items()
-            if v is not None and v != [] and v != {}
+    cleaned = {}
+    for k, v in d.items():
+        if isinstance(v, dict):
+            nested = _clean_dict(v)
+            if nested:
+                cleaned[k] = nested
+        elif isinstance(v, list):
+            if v:
+                cleaned[k] = v
+        elif v is not None:
+            cleaned[k] = v
+    return cleaned
+
+def connector_to_dict(c: Connector) -> Dict[str, Any]:
+    """
+    Converts a Connector domain object to a WireViz dictionary structure.
+
+    Args:
+        c (Connector): The source domain connector.
+
+    Returns:
+        Dict[str, Any]: A dictionary matching the 'connectors' section of WireViz YAML.
+    """
+    d = {
+        "mpn": c.mpn,
+        "pincount": c.pincount,
+        # Only include flags if they deviate from default to reduce noise
+        "show_pincount": c.show_pincount if not c.show_pincount else None, 
+        "hide_disconnected_pins": c.hide_disconnected_pins if c.hide_disconnected_pins else None,
+        "notes": c.notes,
+    }
+    
+    if c.image_src:
+        d["image"] = {
+            "src": c.image_src,
+            "caption": c.image_caption,
+            "height": 50 
         }
-    if isinstance(d, list):
-        return [_clean_data(v) for v in d]
-    return d
-
-
-def format_connectors(connector_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
-    """
-    Formats a list of connector dictionaries into the keyed dictionary
-    structure required by WireViz.
     
+    return _clean_dict(d)
+
+def cable_to_dict(c: Cable) -> Dict[str, Any]:
+    """
+    Converts a Cable domain object to a WireViz dictionary structure.
+
     Args:
-        connector_data: A list of dictionaries, each representing a connector.
+        c (Cable): The source domain cable.
 
     Returns:
-        A dictionary where keys are connector names and values are their attributes.
+        Dict[str, Any]: A dictionary matching the 'cables' section of WireViz YAML.
     """
-    formatted_connectors = {}
-    for connector in connector_data:
-        name = connector.pop('name', None)
-        if name:
-            formatted_connectors[name] = connector
-    return formatted_connectors
+    d = {
+        "wirecount": c.wire_count,
+        "category": c.category,
+        "gauge": c.gauge,
+        "gauge_unit": c.gauge_unit,
+        "notes": c.notes,
+        "wirelabels": c.wire_labels
+    }
+    return _clean_dict(d)
 
-
-def format_cables(cable_data: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+def connection_to_list(c: Connection) -> List[Dict[str, Any]]:
     """
-    Formats a list of cable dictionaries into the keyed dictionary
-    structure required by WireViz.
-    
+    Converts a Connection domain object to a WireViz connection list.
+
+    Format: [ {From: Pin}, {Via: Pin}, {To: Pin} ]
+
     Args:
-        cable_data: A list of dictionaries, each representing a cable.
+        c (Connection): The source connection.
 
     Returns:
-        A dictionary where keys are cable names and values are their attributes.
+        List[Dict[str, Any]]: The list structure required by WireViz.
     """
-    formatted_cables = {}
-    for cable in cable_data:
-        name = cable.pop('name', None)
-        if name:
-            formatted_cables[name] = cable
-    return formatted_cables
-
-
-def format_connections(connection_data: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
-    """
-    Formats a list of connection dictionaries into the list of lists
-    structure required by WireViz.
+    from_node = {c.from_designator: c.from_pin}
+    via_node = {c.via_cable: c.via_pin}
+    to_node = {c.to_designator: c.to_pin}
     
-    Args:
-        connection_data: A list of dictionaries, each defining a single wire's path.
+    return [from_node, via_node, to_node]
 
-    Returns:
-        A list of lists, where each inner list represents a full connection
-        path (e.g., [from_node, via_node, to_node]).
-    """
-    formatted = []
-    # Group connections by the cable they belong to
-    for conn in connection_data:
-        from_node = {conn['from_name']: conn['from_pin']}
-        to_node = {conn['to_name']: conn['to_pin']}
-        via_node = {conn['via_name']: conn['via_pin']}
-        formatted.append([from_node, via_node, to_node])
-    return formatted
 
+# --- Main Builder ---
 
 def build_yaml_file(
-    connectors: List[Dict[str, Any]],
-    cables: List[Dict[str, Any]],
-    connections: List[Dict[str, Any]],
+    connectors: List[Connector],
+    cables: List[Cable],
+    connections: List[Connection],
     yaml_filepath: str
 ) -> None:
     """
-    Takes lists of data for connectors, cables, and connections,
-    formats them into the required WireViz structure, and writes the
-    final YAML file.
+    Orchestrates the creation of the final YAML file.
+
+    Steps:
+    1.  Converts all Domain Objects to Dicts using pure converters.
+    2.  Assembles the final root dictionary.
+    3.  Writes to filesystem using PyYAML.
 
     Args:
-        connectors: A list of connector data dictionaries.
-        cables: A list of cable data dictionaries.
-        connections: A list of connection data dictionaries.
-        yaml_filepath: The full path for the output YAML file.
+        connectors: List of Connector objects.
+        cables: List of Cable objects.
+        connections: List of Connection objects.
+        yaml_filepath: Destination path string.
     """
+    
+    # 1. Convert to Dicts
+    formatted_connectors = {
+        c.designator: connector_to_dict(c) 
+        for c in connectors
+    }
+    
+    formatted_cables = {
+        c.designator: cable_to_dict(c)
+        for c in cables
+    }
+    
+    formatted_connections = [
+        connection_to_list(c)
+        for c in connections
+    ]
+
+    # 2. Assemble Final Structure
     final_data = {}
+    if formatted_connectors:
+        final_data['connectors'] = formatted_connectors
+    if formatted_cables:
+        final_data['cables'] = formatted_cables
+    if formatted_connections:
+        final_data['connections'] = formatted_connections
 
-    if connectors:
-        final_data['connectors'] = format_connectors(connectors)
-    if cables:
-        final_data['cables'] = format_cables(cables)
-    if connections:
-        final_data['connections'] = format_connections(connections)
-
-    # Clean the data for a tidier output file
-    cleaned_data = _clean_data(final_data)
-
+    # 3. Write Output
     with open(yaml_filepath, "w", encoding="utf-8") as f:
         f.write("# WireViz YAML file generated by WireViz YAML Generator v01\n\n")
-        yaml.dump(cleaned_data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
+        yaml.dump(final_data, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
 
     print(f"✅ YAML file successfully created at: {yaml_filepath}")
