@@ -28,3 +28,9 @@ This document summarizes the architectural principles and coding standards estab
 *   **In-Code**: Comprehensive `pydoc` docstrings for all modules, classes, and functions.
 *   **Architecture**: Use **Mermaid** diagrams for Component and Sequence flows.
 *   **Format**: Use **Quarto** (`.qmd`) for generating professional HTML documentation.
+
+# 5. Testing Standards
+*   **Unit Tests**: Write unit tests for all core logic functions.
+*   **Integration Tests**: Write integration tests for all data flows.
+*   **End-to-End Tests**: Write end-to-end tests for all user flows.
+    **Coverage**: Use *pytest* to measure test coverage.
