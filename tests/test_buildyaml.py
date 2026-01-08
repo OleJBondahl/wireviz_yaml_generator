@@ -1,3 +1,21 @@
+"""
+Unit Tests for BuildYaml Module.
+
+This test suite validates the YAML conversion functions that transform
+domain models (Connector, Cable, Connection) into WireViz-compatible
+dictionary structures.
+
+Coverage:
+    - _clean_dict: Removes None/empty values from nested dictionaries
+    - connector_to_dict: Converts Connector objects to YAML schema
+    - cable_to_dict: Converts Cable objects to YAML schema
+    - connection_to_list: Converts Connection objects to connection lists
+    
+Testing Strategy:
+    Uses pytest for structure and dataclasses for immutable test data.
+    Focuses on ensuring correct transformation logic without I/O.
+"""
+
 import sys
 import os
 from typing import Dict, Any
@@ -9,12 +27,14 @@ from models import Connector, Cable, Connection
 from BuildYaml import connector_to_dict, cable_to_dict, connection_to_list, _clean_dict
 
 def test_clean_dict():
+    """Test that None values and empty containers are removed from dictionaries."""
     dirty = {"a": 1, "b": None, "c": [], "d": {}, "e": {"f": None, "g": 2}}
     cleaned = _clean_dict(dirty)
     expected = {"a": 1, "e": {"g": 2}}
     assert cleaned == expected
 
 def test_connector_to_dict():
+    """Test conversion of Connector domain object to WireViz dictionary format."""
     c = Connector(
         designator="J1",
         mpn="ABC",
@@ -29,14 +49,13 @@ def test_connector_to_dict():
     
     assert d['mpn'] == "ABC"
     assert d['pincount'] == 10
-    assert 'show_pincount' not in d # Should be removed as it matches default logic? 
-    # Wait, my logic was: "show_pincount": c.show_pincount if not c.show_pincount else None
-    # So if True (default), it is None, and _clean_dict removes it. Correct.
+    assert 'show_pincount' not in d
     
     assert d['notes'] == "Test Note"
     assert d['image']['src'] == "../img.png"
 
 def test_cable_to_dict():
+    """Test conversion of Cable domain object to WireViz dictionary format."""
     c = Cable(
         designator="W1",
         wire_count=3,
@@ -52,6 +71,7 @@ def test_cable_to_dict():
     assert d['wirelabels'] == ["A", "B", "C"]
 
 def test_connection_to_list():
+    """Test conversion of Connection domain object to WireViz connection list format."""
     c = Connection(
         from_designator="J1",
         from_pin="1",
@@ -63,7 +83,6 @@ def test_connection_to_list():
     )
     l = connection_to_list(c)
     
-    # Expecting [{From}, {Via}, {To}]
     assert len(l) == 3
     assert l[0] == {"J1": "1"}
     assert l[1] == {"W1": 1}

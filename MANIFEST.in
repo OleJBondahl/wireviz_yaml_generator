@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include src *.py
+recursive-include examples *.md *.yaml *.yml *.png *.svg *.html *.tsv
+recursive-include docs *.md *.qmd *.yml
+exclude .gitignore
+exclude poetry.lock
+exclude config.toml
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

@@ -1,8 +1,25 @@
 """
-Main Entry Point.
+Main Entry Point for WireViz YAML Generator.
 
-This script orchestrates the application using the Workflow Manager.
-It handles high-level Error Handling and Dependency Injection.
+This script orchestrates the complete workflow from database to wiring diagrams:
+1. Loads configuration from config.toml
+2. Connects to SQLite database
+3. Generates manufacturing attachments (BOM, Labels)
+4. Creates WireViz YAML files
+5. Invokes WireViz CLI to generate diagram images
+
+Architecture:
+    - Pure Core: Business logic is in transformations.py (pure functions)
+    - Imperative Shell: This module handles I/O, subprocess calls, errors
+    - Dependency Injection: WorkflowManager receives DataSource via constructor
+    
+Error Handling:
+    All application errors are caught at this level and presented to the user.
+    Uses sys.exit() only here (not in library code) for clean CLI behavior.
+
+Example:
+    Configure paths in config.toml, then:
+    $ python src/main.py
 """
 
 import sys
@@ -11,19 +28,56 @@ import subprocess
 from pathlib import Path
 from typing import Set
 
-# Local Imports
 from exceptions import WireVizError
 from ReadConfig import ConfigLoader
 from data_access import SqliteDataSource
 from workflow_manager import WorkflowManager
 
 def get_available_images(resource_path: Path) -> Set[str]:
-    """Scans the resource directory for available image files."""
+    """
+    Scans a directory for available connector image files.
+    
+    WireViz can embed images in diagrams. This function discovers
+    which images are available so the transformation logic can
+    reference them when building connector definitions.
+    
+    Args:
+        resource_path: Directory containing connector image files (PNG).
+        
+    Returns:
+        Set of image filenames (e.g., {"connector_x1.png", "terminal.png"}).
+        Returns empty set if directory doesn't exist.
+    """
     if not resource_path.is_dir():
         return set()
     return {f.name for f in resource_path.glob("*.png")}
 
 def main() -> None:
+    """
+    Main workflow orchestration function.
+    
+    Executes the complete pipeline from database to diagrams:
+    1. Loads configuration from config.toml
+    2. Initializes database connection and workflow manager
+    3. Scans for available connector images
+    4. Generates manufacturing attachments (BOM and Labels)
+    5. For each cable, generates YAML and invokes WireViz CLI
+    
+    Configuration:
+        Edit constants in this function to control:
+        - CREATE_BOM: Generate Bill of Materials
+        - CREATE_LABELS: Generate wire/cable labels
+        - CREATE_DRAWINGS: Generate diagram images
+        - FROM_CABLE_NR, TO_CABLE_NR: Range of cables to process
+        - DONT_INCLUDE_FILTER: Specific cables to skip
+        
+    Workflow:
+        Attachments are generated once for all cables (BOM aggregates).
+        YAML files and diagrams are generated per-cable (filtered).
+        
+    Raises:
+        SystemExit: On any error (code 1), after printing error message.
+    """
     try:
         # 1. Load Configuration
         config = ConfigLoader.get_instance()
