@@ -207,13 +207,6 @@ marimo/_lsp/
 __marimo__/
 
 
-# outputs
-*.png
-*.html
-*.tsv
-*.sqbpro
-*.svg
-
 # Quarto
 .quarto/
 docs/_site/
