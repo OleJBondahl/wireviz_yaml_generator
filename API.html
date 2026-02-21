@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>api – WireViz YAML Generator</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-355c415dd6b9922ddaf04a2341011fe1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">WireViz YAML Generator</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./system_architecture.html"> 
+<span class="menu-text">System Architecture</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./data_flow.html"> 
+<span class="menu-text">Data Flow Documentation</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#wireviz-yaml-generator-api-reference" id="toc-wireviz-yaml-generator-api-reference" class="nav-link active" data-scroll-target="#wireviz-yaml-generator-api-reference">WireViz YAML Generator — API Reference</a>
+  <ul class="collapse">
+  <li><a href="#data-sources-input" id="toc-data-sources-input" class="nav-link" data-scroll-target="#data-sources-input">Data Sources (Input)</a>
+  <ul class="collapse">
+  <li><a href="#sqlite-database" id="toc-sqlite-database" class="nav-link" data-scroll-target="#sqlite-database">SQLite Database</a></li>
+  <li><a href="#nettable" id="toc-nettable" class="nav-link" data-scroll-target="#nettable">NetTable</a></li>
+  <li><a href="#designatortable" id="toc-designatortable" class="nav-link" data-scroll-target="#designatortable">DesignatorTable</a></li>
+  <li><a href="#connectortable" id="toc-connectortable" class="nav-link" data-scroll-target="#connectortable">ConnectorTable</a></li>
+  <li><a href="#cabletable" id="toc-cabletable" class="nav-link" data-scroll-target="#cabletable">CableTable</a></li>
+  <li><a href="#csv-file-alternative" id="toc-csv-file-alternative" class="nav-link" data-scroll-target="#csv-file-alternative">CSV File (Alternative)</a></li>
+  </ul></li>
+  <li><a href="#domain-models" id="toc-domain-models" class="nav-link" data-scroll-target="#domain-models">Domain Models</a>
+  <ul class="collapse">
+  <li><a href="#connector" id="toc-connector" class="nav-link" data-scroll-target="#connector">Connector</a></li>
+  <li><a href="#cable" id="toc-cable" class="nav-link" data-scroll-target="#cable">Cable</a></li>
+  <li><a href="#connection" id="toc-connection" class="nav-link" data-scroll-target="#connection">Connection</a></li>
+  <li><a href="#bomitem" id="toc-bomitem" class="nav-link" data-scroll-target="#bomitem">BomItem</a></li>
+  <li><a href="#wire" id="toc-wire" class="nav-link" data-scroll-target="#wire">Wire</a></li>
+  </ul></li>
+  <li><a href="#raw-database-row-models" id="toc-raw-database-row-models" class="nav-link" data-scroll-target="#raw-database-row-models">Raw Database Row Models</a>
+  <ul class="collapse">
+  <li><a href="#netrow" id="toc-netrow" class="nav-link" data-scroll-target="#netrow">NetRow</a></li>
+  <li><a href="#designatorrow" id="toc-designatorrow" class="nav-link" data-scroll-target="#designatorrow">DesignatorRow</a></li>
+  <li><a href="#connectorrow" id="toc-connectorrow" class="nav-link" data-scroll-target="#connectorrow">ConnectorRow</a></li>
+  <li><a href="#cablerow" id="toc-cablerow" class="nav-link" data-scroll-target="#cablerow">CableRow</a></li>
+  </ul></li>
+  <li><a href="#public-functions" id="toc-public-functions" class="nav-link" data-scroll-target="#public-functions">Public Functions</a>
+  <ul class="collapse">
+  <li><a href="#transformation-layer-srctransformations.py" id="toc-transformation-layer-srctransformations.py" class="nav-link" data-scroll-target="#transformation-layer-srctransformations.py">Transformation Layer (<code>src/transformations.py</code>)</a></li>
+  <li><a href="#yaml-output-layer-srcbuildyaml.py" id="toc-yaml-output-layer-srcbuildyaml.py" class="nav-link" data-scroll-target="#yaml-output-layer-srcbuildyaml.py">YAML Output Layer (<code>src/BuildYaml.py</code>)</a></li>
+  <li><a href="#data-access-layer" id="toc-data-access-layer" class="nav-link" data-scroll-target="#data-access-layer">Data Access Layer</a></li>
+  <li><a href="#orchestration-srcworkflow_manager.py" id="toc-orchestration-srcworkflow_manager.py" class="nav-link" data-scroll-target="#orchestration-srcworkflow_manager.py">Orchestration (<code>src/workflow_manager.py</code>)</a></li>
+  <li><a href="#excel-output-srcexcel_writer.py" id="toc-excel-output-srcexcel_writer.py" class="nav-link" data-scroll-target="#excel-output-srcexcel_writer.py">Excel Output (<code>src/excel_writer.py</code>)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="wireviz-yaml-generator-api-reference" class="level1">
+<h1>WireViz YAML Generator — API Reference</h1>
+<p>This document describes the data models, database schema, and public functions that make up the library’s API. Fields are marked <strong>required</strong> or <strong>optional</strong> (with defaults shown).</p>
+<hr>
+<section id="data-sources-input" class="level2">
+<h2 class="anchored" data-anchor-id="data-sources-input">Data Sources (Input)</h2>
+<p>The library supports two input formats: <strong>SQLite database</strong> (original) and <strong>CSV file</strong> (simpler alternative). Both produce the same domain models and can be used interchangeably via <code>DataSourceProtocol</code>.</p>
+<section id="sqlite-database" class="level3">
+<h3 class="anchored" data-anchor-id="sqlite-database">SQLite Database</h3>
+<p>The library reads from a SQLite database with four tables. All columns are required unless noted.</p>
+</section>
+<section id="nettable" class="level3">
+<h3 class="anchored" data-anchor-id="nettable">NetTable</h3>
+<p>Each row represents one wire connection between two pins via a cable.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cable_des</code></td>
+<td><code>TEXT</code></td>
+<td>Cable designator (e.g., <code>"W001"</code>)</td>
+</tr>
+<tr class="even">
+<td><code>comp_des_1</code></td>
+<td><code>TEXT</code></td>
+<td>Component designator — side 1 (e.g., <code>"J1"</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>conn_des_1</code></td>
+<td><code>TEXT</code></td>
+<td>Connector designator — side 1 (e.g., <code>"X1"</code>). Empty string if component has no sub-connector.</td>
+</tr>
+<tr class="even">
+<td><code>pin_1</code></td>
+<td><code>TEXT</code></td>
+<td>Pin number — side 1</td>
+</tr>
+<tr class="odd">
+<td><code>comp_des_2</code></td>
+<td><code>TEXT</code></td>
+<td>Component designator — side 2</td>
+</tr>
+<tr class="even">
+<td><code>conn_des_2</code></td>
+<td><code>TEXT</code></td>
+<td>Connector designator — side 2. Empty string if none.</td>
+</tr>
+<tr class="odd">
+<td><code>pin_2</code></td>
+<td><code>TEXT</code></td>
+<td>Pin number — side 2</td>
+</tr>
+<tr class="even">
+<td><code>net_name</code></td>
+<td><code>TEXT</code></td>
+<td>Electrical signal name (e.g., <code>"+24V"</code>, <code>"gnd"</code>, <code>"SignalA"</code>)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="designatortable" class="level3">
+<h3 class="anchored" data-anchor-id="designatortable">DesignatorTable</h3>
+<p>Maps each component/connector pair to a connector part number.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>comp_des</code></td>
+<td><code>TEXT</code></td>
+<td>Component designator</td>
+</tr>
+<tr class="even">
+<td><code>conn_des</code></td>
+<td><code>TEXT</code></td>
+<td>Connector designator (empty string if none)</td>
+</tr>
+<tr class="odd">
+<td><code>conn_mpn</code></td>
+<td><code>TEXT</code></td>
+<td>Connector manufacturer part number — used to look up metadata in ConnectorTable</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="connectortable" class="level3">
+<h3 class="anchored" data-anchor-id="connectortable">ConnectorTable</h3>
+<p>Catalog of connector specifications. Keyed by <code>mpn</code>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mpn</code></td>
+<td><code>TEXT</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Manufacturer part number (primary lookup key)</td>
+</tr>
+<tr class="even">
+<td><code>pincount</code></td>
+<td><code>INTEGER</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Number of pins</td>
+</tr>
+<tr class="odd">
+<td><code>mate_mpn</code></td>
+<td><code>TEXT</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Mating connector MPN — used in BOM output and image filename lookup</td>
+</tr>
+<tr class="even">
+<td><code>pin_mpn</code></td>
+<td><code>TEXT</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Pin/terminal MPN. If contains <code>"Wire Ferrule"</code>, triggers special ferrule logic.</td>
+</tr>
+<tr class="odd">
+<td><code>description</code></td>
+<td><code>TEXT</code></td>
+<td>optional</td>
+<td><code>""</code></td>
+<td>Part description</td>
+</tr>
+<tr class="even">
+<td><code>manufacturer</code></td>
+<td><code>TEXT</code></td>
+<td>optional</td>
+<td><code>""</code></td>
+<td>Manufacturer name</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cabletable" class="level3">
+<h3 class="anchored" data-anchor-id="cabletable">CableTable</h3>
+<p>Physical properties for each cable.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cable_des</code></td>
+<td><code>TEXT</code></td>
+<td>Cable designator (must match <code>NetTable.cable_des</code>)</td>
+</tr>
+<tr class="even">
+<td><code>wire_gauge</code></td>
+<td><code>REAL</code></td>
+<td>Wire gauge in mm²</td>
+</tr>
+<tr class="odd">
+<td><code>length</code></td>
+<td><code>REAL</code></td>
+<td>Cable length in mm</td>
+</tr>
+<tr class="even">
+<td><code>note</code></td>
+<td><code>TEXT</code></td>
+<td>Construction note (appears in YAML output)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="csv-file-alternative" class="level3">
+<h3 class="anchored" data-anchor-id="csv-file-alternative">CSV File (Alternative)</h3>
+<p>A single denormalized CSV file where each row represents one wire connection with optional inline metadata. Avoids the need for a SQLite database for simpler projects.</p>
+<p><strong>Required columns</strong> (8 — enough for basic YAML generation):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cable_des</code></td>
+<td>Cable designator (e.g., <code>"W001"</code>)</td>
+</tr>
+<tr class="even">
+<td><code>comp_des_1</code></td>
+<td>Component designator — side 1</td>
+</tr>
+<tr class="odd">
+<td><code>conn_des_1</code></td>
+<td>Connector designator — side 1 (empty string if none)</td>
+</tr>
+<tr class="even">
+<td><code>pin_1</code></td>
+<td>Pin number — side 1</td>
+</tr>
+<tr class="odd">
+<td><code>comp_des_2</code></td>
+<td>Component designator — side 2</td>
+</tr>
+<tr class="even">
+<td><code>conn_des_2</code></td>
+<td>Connector designator — side 2 (empty string if none)</td>
+</tr>
+<tr class="odd">
+<td><code>pin_2</code></td>
+<td>Pin number — side 2</td>
+</tr>
+<tr class="even">
+<td><code>net_name</code></td>
+<td>Signal name</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Optional columns</strong> (10 — enable BOM, connector enrichment, cable specs):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>conn_mpn_1</code></td>
+<td>Connector MPN for side 1 endpoint</td>
+</tr>
+<tr class="even">
+<td><code>conn_mpn_2</code></td>
+<td>Connector MPN for side 2 endpoint</td>
+</tr>
+<tr class="odd">
+<td><code>pincount</code></td>
+<td>Pin count (associated with whichever MPN is first seen)</td>
+</tr>
+<tr class="even">
+<td><code>mate_mpn</code></td>
+<td>Mating connector MPN</td>
+</tr>
+<tr class="odd">
+<td><code>pin_mpn</code></td>
+<td>Pin/terminal MPN</td>
+</tr>
+<tr class="even">
+<td><code>conn_description</code></td>
+<td>Connector description</td>
+</tr>
+<tr class="odd">
+<td><code>conn_manufacturer</code></td>
+<td>Connector manufacturer</td>
+</tr>
+<tr class="even">
+<td><code>wire_gauge</code></td>
+<td>Wire gauge in mm²</td>
+</tr>
+<tr class="odd">
+<td><code>length</code></td>
+<td>Cable length in mm</td>
+</tr>
+<tr class="even">
+<td><code>cable_note</code></td>
+<td>Construction note</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Empty-value behavior:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Can be empty?</th>
+<th>Effect when empty</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cable_des</code></td>
+<td>Only if <code>auto_generate_cable_des=True</code></td>
+<td>Auto-assigned <code>W_AUTO_001</code>, <code>W_AUTO_002</code>, etc.</td>
+</tr>
+<tr class="even">
+<td><code>comp_des_1/2</code></td>
+<td>No</td>
+<td>Required</td>
+</tr>
+<tr class="odd">
+<td><code>pin_1/2</code></td>
+<td>No</td>
+<td>Required</td>
+</tr>
+<tr class="even">
+<td><code>net_name</code></td>
+<td>No</td>
+<td>Required</td>
+</tr>
+<tr class="odd">
+<td><code>conn_des_1/2</code></td>
+<td>Yes</td>
+<td>No sub-connector</td>
+</tr>
+<tr class="even">
+<td><code>conn_mpn_1/2</code></td>
+<td>Yes</td>
+<td>No designator entry for that side</td>
+</tr>
+<tr class="odd">
+<td><code>pincount</code>, <code>mate_mpn</code>, <code>pin_mpn</code></td>
+<td>Yes</td>
+<td>Connector skipped in catalog</td>
+</tr>
+<tr class="even">
+<td><code>wire_gauge</code>, <code>length</code></td>
+<td>Yes</td>
+<td>Cable skipped in cable table</td>
+</tr>
+<tr class="odd">
+<td><code>conn_description</code>, <code>conn_manufacturer</code>, <code>cable_note</code></td>
+<td>Yes</td>
+<td>Defaults to <code>""</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deduplication rules:</strong> - Connector catalog columns (<code>pincount</code> through <code>conn_manufacturer</code>) only need to be specified on the first row where a given MPN appears. - <code>load_designator_table()</code> extracts unique <code>(comp_des, conn_des, conn_mpn)</code> triples from both sides. - <code>load_connector_table()</code> creates one <code>ConnectorRow</code> per unique MPN (requires <code>pincount</code>, <code>mate_mpn</code>, and <code>pin_mpn</code> all present). - <code>load_cable_table()</code> creates one <code>CableRow</code> per unique <code>cable_des</code> (requires both <code>wire_gauge</code> and <code>length</code>).</p>
+<p><strong>Usage:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> csv_data_source <span class="im">import</span> CsvDataSource</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> workflow_manager <span class="im">import</span> WorkflowManager</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Explicit cable designators</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> CsvDataSource(<span class="st">"path/to/input.csv"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>wm <span class="op">=</span> WorkflowManager(ds)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>wm.run_yaml_workflow(<span class="st">"W001"</span>, <span class="st">"output/W001.yaml"</span>, available_images<span class="op">=</span><span class="bu">set</span>())</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Auto-generate cable designators for rows with empty cable_des</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> CsvDataSource(<span class="st">"path/to/input.csv"</span>, auto_generate_cable_des<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>See <code>examples/example_input.csv</code> for a sample file.</p>
+<hr>
+</section>
+</section>
+<section id="domain-models" class="level2">
+<h2 class="anchored" data-anchor-id="domain-models">Domain Models</h2>
+<p>All models are frozen (immutable) dataclasses defined in <code>src/models.py</code>.</p>
+<section id="connector" class="level3">
+<h3 class="anchored" data-anchor-id="connector">Connector</h3>
+<p>Represents a physical connector in the wiring diagram.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>designator</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Schematic designator (e.g., <code>"J1-X1"</code> or <code>"J2"</code>)</td>
+</tr>
+<tr class="even">
+<td><code>mpn</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Manufacturer part number (mating side)</td>
+</tr>
+<tr class="odd">
+<td><code>pincount</code></td>
+<td><code>int \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Number of pins</td>
+</tr>
+<tr class="even">
+<td><code>description</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Part description</td>
+</tr>
+<tr class="odd">
+<td><code>manufacturer</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Manufacturer name</td>
+</tr>
+<tr class="even">
+<td><code>image_src</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Relative path to connector image</td>
+</tr>
+<tr class="odd">
+<td><code>image_caption</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Caption for the image</td>
+</tr>
+<tr class="even">
+<td><code>hide_disconnected_pins</code></td>
+<td><code>bool</code></td>
+<td>optional</td>
+<td><code>False</code></td>
+<td>WireViz: hide pins with no connections</td>
+</tr>
+<tr class="odd">
+<td><code>show_pincount</code></td>
+<td><code>bool</code></td>
+<td>optional</td>
+<td><code>True</code></td>
+<td>WireViz: show pin count on diagram</td>
+</tr>
+<tr class="even">
+<td><code>notes</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Notes shown on the diagram</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cable" class="level3">
+<h3 class="anchored" data-anchor-id="cable">Cable</h3>
+<p>Represents a cable bundle containing one or more wires.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>designator</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Cable designator (e.g., <code>"W001"</code>)</td>
+</tr>
+<tr class="even">
+<td><code>wire_count</code></td>
+<td><code>int</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Number of wires in the bundle</td>
+</tr>
+<tr class="odd">
+<td><code>wire_labels</code></td>
+<td><code>list[str]</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Signal names, one per wire. Order matches <code>Connection.via_pin</code>.</td>
+</tr>
+<tr class="even">
+<td><code>category</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>"bundle"</code></td>
+<td>WireViz category</td>
+</tr>
+<tr class="odd">
+<td><code>length</code></td>
+<td><code>float \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Cable length in mm</td>
+</tr>
+<tr class="even">
+<td><code>length_unit</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>"mm"</code></td>
+<td>Unit for length</td>
+</tr>
+<tr class="odd">
+<td><code>gauge</code></td>
+<td><code>float \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Wire gauge in mm²</td>
+</tr>
+<tr class="even">
+<td><code>gauge_unit</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>"mm2"</code></td>
+<td>Unit for gauge</td>
+</tr>
+<tr class="odd">
+<td><code>notes</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Construction notes</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="connection" class="level3">
+<h3 class="anchored" data-anchor-id="connection">Connection</h3>
+<p>Represents a point-to-point electrical connection through a cable.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>from_designator</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Source connector designator</td>
+</tr>
+<tr class="even">
+<td><code>from_pin</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Source pin number</td>
+</tr>
+<tr class="odd">
+<td><code>to_designator</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Destination connector designator</td>
+</tr>
+<tr class="even">
+<td><code>to_pin</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Destination pin number</td>
+</tr>
+<tr class="odd">
+<td><code>via_cable</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Cable carrying this connection</td>
+</tr>
+<tr class="even">
+<td><code>via_pin</code></td>
+<td><code>int</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Wire position within the cable (1-indexed)</td>
+</tr>
+<tr class="odd">
+<td><code>net_name</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Electrical signal name</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bomitem" class="level3">
+<h3 class="anchored" data-anchor-id="bomitem">BomItem</h3>
+<p>A single line in the Bill of Materials.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mpn</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Part number</td>
+</tr>
+<tr class="even">
+<td><code>description</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Part description</td>
+</tr>
+<tr class="odd">
+<td><code>manufacturer</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Manufacturer name</td>
+</tr>
+<tr class="even">
+<td><code>quantity</code></td>
+<td><code>float</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Quantity needed</td>
+</tr>
+<tr class="odd">
+<td><code>unit</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Unit of measure (<code>"pcs"</code> or <code>"Meter"</code>)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="wire" class="level3">
+<h3 class="anchored" data-anchor-id="wire">Wire</h3>
+<p>Physical properties of a single wire strand.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>gauge</code></td>
+<td><code>float \| None</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+<td>Wire gauge</td>
+</tr>
+<tr class="even">
+<td><code>gauge_unit</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>"mm2"</code></td>
+<td>Gauge unit</td>
+</tr>
+<tr class="odd">
+<td><code>color</code></td>
+<td><code>str \| None</code></td>
+<td>optional</td>
+<td><code>None</code></td>
+<td>Wire color</td>
+</tr>
+<tr class="even">
+<td><code>description</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>"Radox 125"</code></td>
+<td>Wire type description</td>
+</tr>
+<tr class="odd">
+<td><code>manufacturer</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>""</code></td>
+<td>Manufacturer</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="raw-database-row-models" class="level2">
+<h2 class="anchored" data-anchor-id="raw-database-row-models">Raw Database Row Models</h2>
+<p>These mirror the SQLite tables exactly and are the input to all transformation functions.</p>
+<section id="netrow" class="level3">
+<h3 class="anchored" data-anchor-id="netrow">NetRow</h3>
+<p>All fields <strong>required</strong>: <code>cable_des</code>, <code>comp_des_1</code>, <code>conn_des_1</code>, <code>pin_1</code>, <code>comp_des_2</code>, <code>conn_des_2</code>, <code>pin_2</code>, <code>net_name</code> — all <code>str</code>.</p>
+</section>
+<section id="designatorrow" class="level3">
+<h3 class="anchored" data-anchor-id="designatorrow">DesignatorRow</h3>
+<p>All fields <strong>required</strong>: <code>comp_des</code>, <code>conn_des</code>, <code>conn_mpn</code> — all <code>str</code>.</p>
+</section>
+<section id="connectorrow" class="level3">
+<h3 class="anchored" data-anchor-id="connectorrow">ConnectorRow</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mpn</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><code>pincount</code></td>
+<td><code>int</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>mate_mpn</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><code>pin_mpn</code></td>
+<td><code>str</code></td>
+<td><strong>required</strong></td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>description</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>""</code></td>
+</tr>
+<tr class="even">
+<td><code>manufacturer</code></td>
+<td><code>str</code></td>
+<td>optional</td>
+<td><code>""</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cablerow" class="level3">
+<h3 class="anchored" data-anchor-id="cablerow">CableRow</h3>
+<p>All fields <strong>required</strong>: <code>cable_des</code> (<code>str</code>), <code>wire_gauge</code> (<code>float</code>), <code>length</code> (<code>float</code>), <code>note</code> (<code>str</code>).</p>
+<hr>
+</section>
+</section>
+<section id="public-functions" class="level2">
+<h2 class="anchored" data-anchor-id="public-functions">Public Functions</h2>
+<section id="transformation-layer-srctransformations.py" class="level3">
+<h3 class="anchored" data-anchor-id="transformation-layer-srctransformations.py">Transformation Layer (<code>src/transformations.py</code>)</h3>
+<p>All functions are <strong>pure</strong> — no I/O, no side effects.</p>
+<section id="process_connectors" class="level4">
+<h4 class="anchored" data-anchor-id="process_connectors"><code>process_connectors</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>process_connectors(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    net_rows: <span class="bu">list</span>[NetRow],</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    designator_rows: <span class="bu">list</span>[DesignatorRow],</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    connector_rows: <span class="bu">list</span>[ConnectorRow],</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    available_images: <span class="bu">set</span>[<span class="bu">str</span>],   <span class="co"># e.g. {"MATE-123.png"}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    filter_active: <span class="bu">bool</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">list</span>[Connector]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Transforms raw rows into enriched <code>Connector</code> objects. When <code>filter_active=True</code>, only connectors referenced in <code>net_rows</code> are returned.</p>
+<p><strong>Business rules:</strong> - Designator format: <code>"{comp_des}-{conn_des}"</code> if <code>conn_des</code> is non-empty, else <code>"{comp_des}"</code> - Wire Ferrule: if <code>pin_mpn</code> contains <code>"Wire Ferrule"</code> → <code>notes="Terminate Wires in Wire Ferrule"</code>, <code>hide_disconnected=True</code>, <code>show_pincount=False</code>, <code>mpn=None</code> - Image: if <code>"{mate_mpn}.png"</code> is in <code>available_images</code> → <code>image_src="../resources/{mate_mpn}.png"</code> - MPN not found: <code>mpn="NotFound"</code>, <code>hide_disconnected=True</code></p>
+</section>
+<section id="process_cables" class="level4">
+<h4 class="anchored" data-anchor-id="process_cables"><code>process_cables</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>process_cables(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    net_rows: <span class="bu">list</span>[NetRow],</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    cable_rows: <span class="bu">list</span>[CableRow],</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">list</span>[Cable]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Aggregates wires into <code>Cable</code> objects. Looks up gauge/notes from <code>cable_rows</code>.</p>
+<p><strong>Critical invariant:</strong> Sorts by <code>(cable_des, comp_des_1, conn_des_1, pin_1)</code> — the same key used by <code>process_connections()</code>. This ensures <code>wire_labels[i]</code> corresponds to <code>via_pin = i+1</code>.</p>
+</section>
+<section id="process_connections" class="level4">
+<h4 class="anchored" data-anchor-id="process_connections"><code>process_connections</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>process_connections(net_rows: <span class="bu">list</span>[NetRow]) <span class="op">-&gt;</span> <span class="bu">list</span>[Connection]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Maps net rows to <code>Connection</code> objects with auto-assigned <code>via_pin</code> (1-indexed per cable).</p>
+<p><strong>Critical invariant:</strong> Uses the same sort key as <code>process_cables()</code>.</p>
+</section>
+<section id="generate_bom_data" class="level4">
+<h4 class="anchored" data-anchor-id="generate_bom_data"><code>generate_bom_data</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>generate_bom_data(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    net_rows: <span class="bu">list</span>[NetRow],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    designator_rows: <span class="bu">list</span>[DesignatorRow],</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    connector_rows: <span class="bu">list</span>[ConnectorRow],</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    cable_rows: <span class="bu">list</span>[CableRow],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, Any]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns BOM as list-of-dicts with keys: <code>mpn</code>, <code>description</code>, <code>manufacturer</code>, <code>quantity</code>, <code>unit</code>.</p>
+<p><strong>Business rules:</strong> - Connector quantity: count of active designators per <code>conn_mpn</code>, outputs <code>mate_mpn</code> - Wire color: <code>"Red"</code> if <code>"24V"</code> in net_name, <code>"Black"</code> if <code>"gnd"</code> in net_name, <code>"White"</code> otherwise (case-sensitive) - Wire quantity: <code>(length_mm × wire_count) / 1000</code> → meters - Wire MPN format: <code>"{wire_gauge}mm2-{color}"</code></p>
+</section>
+<section id="generate_cable_labels" class="level4">
+<h4 class="anchored" data-anchor-id="generate_cable_labels"><code>generate_cable_labels</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>generate_cable_labels(net_rows: <span class="bu">list</span>[NetRow]) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns <code>[{"Label": ...}, ...]</code>. First entry is <code>"Cable Labels:"</code> header. Labels are deduplicated per cable. Format: <code>"{comp_des}-{conn_des} : {cable_des}"</code>.</p>
+</section>
+<section id="generate_wire_labels" class="level4">
+<h4 class="anchored" data-anchor-id="generate_wire_labels"><code>generate_wire_labels</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>generate_wire_labels(net_rows: <span class="bu">list</span>[NetRow]) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, <span class="bu">str</span>]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns <code>[{"Label": ...}, ...]</code>. First entry is <code>"Wire Labels:"</code> header. Grouped by cable with <code>"Labels: {cable_des}"</code> sub-headers. Each wire produces two lines (one per side).</p>
+</section>
+</section>
+<section id="yaml-output-layer-srcbuildyaml.py" class="level3">
+<h3 class="anchored" data-anchor-id="yaml-output-layer-srcbuildyaml.py">YAML Output Layer (<code>src/BuildYaml.py</code>)</h3>
+<section id="connector_to_dict" class="level4">
+<h4 class="anchored" data-anchor-id="connector_to_dict"><code>connector_to_dict</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>connector_to_dict(c: Connector) <span class="op">-&gt;</span> <span class="bu">dict</span>[<span class="bu">str</span>, Any]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Converts to WireViz dict. <code>show_pincount</code> only appears when <code>False</code>. <code>hide_disconnected_pins</code> only appears when <code>True</code>. Image included as nested dict with <code>height=50</code>.</p>
+</section>
+<section id="cable_to_dict" class="level4">
+<h4 class="anchored" data-anchor-id="cable_to_dict"><code>cable_to_dict</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cable_to_dict(c: Cable) <span class="op">-&gt;</span> <span class="bu">dict</span>[<span class="bu">str</span>, Any]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Converts to WireViz dict. Key mapping: <code>wire_count</code> → <code>"wirecount"</code>, <code>wire_labels</code> → <code>"wirelabels"</code>.</p>
+</section>
+<section id="connection_to_list" class="level4">
+<h4 class="anchored" data-anchor-id="connection_to_list"><code>connection_to_list</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>connection_to_list(c: Connection) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, Any]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Returns 3-element list: <code>[{from_designator: from_pin}, {via_cable: via_pin}, {to_designator: to_pin}]</code>. Pin values for connectors are <code>str</code>, for cables <code>int</code>.</p>
+</section>
+<section id="build_yaml_file" class="level4">
+<h4 class="anchored" data-anchor-id="build_yaml_file"><code>build_yaml_file</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>build_yaml_file(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    connectors: <span class="bu">list</span>[Connector],</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    cables: <span class="bu">list</span>[Cable],</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    connections: <span class="bu">list</span>[Connection],</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    yaml_filepath: <span class="bu">str</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="va">None</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Writes a complete WireViz YAML file. Root structure:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">connectors</span><span class="kw">:</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">&lt;designator&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">mpn</span><span class="kw">,</span><span class="at"> pincount</span><span class="kw">,</span><span class="at"> ...</span><span class="kw">}</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cables</span><span class="kw">:</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">&lt;designator&gt;</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="at">wirecount</span><span class="kw">,</span><span class="at"> category</span><span class="kw">,</span><span class="at"> ...</span><span class="kw">}</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">connections</span><span class="kw">:</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="kw">[{</span><span class="fu">from</span><span class="kw">:</span><span class="at"> pin</span><span class="kw">},</span><span class="at"> </span><span class="kw">{</span><span class="fu">cable</span><span class="kw">:</span><span class="at"> pin</span><span class="kw">},</span><span class="at"> </span><span class="kw">{</span><span class="fu">to</span><span class="kw">:</span><span class="at"> pin</span><span class="kw">}]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="data-access-layer" class="level3">
+<h3 class="anchored" data-anchor-id="data-access-layer">Data Access Layer</h3>
+<section id="datasourceprotocol-srcprotocols.py" class="level4">
+<h4 class="anchored" data-anchor-id="datasourceprotocol-srcprotocols.py"><code>DataSourceProtocol</code> (<code>src/protocols.py</code>)</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DataSourceProtocol(Protocol):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> check_cable_existence(<span class="va">self</span>, cable_des: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">bool</span>: ...</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load_net_table(<span class="va">self</span>, cable_des_filter: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span>) <span class="op">-&gt;</span> <span class="bu">list</span>[NetRow]: ...</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load_designator_table(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">list</span>[DesignatorRow]: ...</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load_connector_table(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">list</span>[ConnectorRow]: ...</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load_cable_table(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">list</span>[CableRow]: ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Structural interface satisfied by both <code>SqliteDataSource</code> and <code>CsvDataSource</code>.</p>
+</section>
+<section id="sqlitedatasource-srcdata_access.py" class="level4">
+<h4 class="anchored" data-anchor-id="sqlitedatasource-srcdata_access.py"><code>SqliteDataSource</code> (<code>src/data_access.py</code>)</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SqliteDataSource:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, db_filepath: <span class="bu">str</span>): ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Raises <code>DatabaseError</code> (subclass of <code>WireVizError</code>) on SQLite failures.</p>
+</section>
+<section id="csvdatasource-srccsv_data_source.py" class="level4">
+<h4 class="anchored" data-anchor-id="csvdatasource-srccsv_data_source.py"><code>CsvDataSource</code> (<code>src/csv_data_source.py</code>)</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CsvDataSource:</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, csv_filepath: <span class="bu">str</span>, <span class="op">*</span>, auto_generate_cable_des: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>): ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>When <code>auto_generate_cable_des=True</code>, rows with empty <code>cable_des</code> are assigned unique designators (<code>W_AUTO_001</code>, <code>W_AUTO_002</code>, …). When <code>False</code> (default), empty <code>cable_des</code> raises <code>DataSourceError</code>.</p>
+<p>Raises <code>DataSourceError</code> (subclass of <code>WireVizError</code>) on missing file, empty CSV, missing required columns, or empty <code>cable_des</code> (when <code>auto_generate_cable_des=False</code>).</p>
+</section>
+</section>
+<section id="orchestration-srcworkflow_manager.py" class="level3">
+<h3 class="anchored" data-anchor-id="orchestration-srcworkflow_manager.py">Orchestration (<code>src/workflow_manager.py</code>)</h3>
+<section id="workflowmanager" class="level4">
+<h4 class="anchored" data-anchor-id="workflowmanager"><code>WorkflowManager</code></h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> WorkflowManager:</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, data_source: DataSourceProtocol): ...</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> run_yaml_workflow(</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>        cable_filter: <span class="bu">str</span>,             <span class="co"># single cable designator</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>        yaml_filepath: <span class="bu">str</span>,            <span class="co"># output path</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>        available_images: <span class="bu">set</span>[<span class="bu">str</span>],    <span class="co"># image filenames in resources/</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> <span class="va">None</span>: ...</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> run_attachment_workflow(</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>,</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        cable_filters: <span class="bu">list</span>[<span class="bu">str</span>],     <span class="co"># cable designators to include</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        output_path: <span class="bu">str</span>,             <span class="co"># directory for Excel files</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>        create_bom: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>        create_labels: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    ) <span class="op">-&gt;</span> <span class="va">None</span>: ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="excel-output-srcexcel_writer.py" class="level3">
+<h3 class="anchored" data-anchor-id="excel-output-srcexcel_writer.py">Excel Output (<code>src/excel_writer.py</code>)</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> write_xlsx(data: <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, Any]], filename: <span class="bu">str</span>, output_path: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="va">None</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add_misc_bom_items(bom_data: <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, Any]], filename: <span class="bu">str</span>, output_path: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">list</span>[<span class="bu">dict</span>[<span class="bu">str</span>, Any]]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>write_xlsx</code> creates <code>{output_path}/{filename}.xlsx</code>. Skips creation if <code>data</code> is empty.</p>
+<p><code>add_misc_bom_items</code> reads <code>{output_path}/{filename}.csv</code> and appends rows to <code>bom_data</code>. Returns original data unchanged if CSV not found.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/OleJBondahl\.github\.io\/wireviz_yaml_generator\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

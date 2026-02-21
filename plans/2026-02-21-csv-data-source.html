@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="WireViz Generator Team">
-<meta name="dcterms.date" content="2026-02-21">
 
-<title>System Architecture – WireViz YAML Generator</title>
+<title>csv-data-source – WireViz YAML Generator</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,27 +20,62 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-355c415dd6b9922ddaf04a2341011fe1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-355c415dd6b9922ddaf04a2341011fe1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -70,12 +103,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
-<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
-<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -85,7 +115,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">WireViz YAML Generator</span>
     </a>
   </div>
@@ -96,15 +126,15 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./system_architecture.html" aria-current="page"> 
+    <a class="nav-link" href="../system_architecture.html"> 
 <span class="menu-text">System Architecture</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./data_flow.html"> 
+    <a class="nav-link" href="../data_flow.html"> 
 <span class="menu-text">Data Flow Documentation</span></a>
   </li>  
 </ul>
@@ -123,162 +153,238 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
-  <li><a href="#component-diagram" id="toc-component-diagram" class="nav-link" data-scroll-target="#component-diagram">Component Diagram</a></li>
-  <li><a href="#module-responsibilities" id="toc-module-responsibilities" class="nav-link" data-scroll-target="#module-responsibilities">Module Responsibilities</a></li>
-  <li><a href="#key-design-patterns" id="toc-key-design-patterns" class="nav-link" data-scroll-target="#key-design-patterns">Key Design Patterns</a>
+  <li><a href="#plan-add-csv-data-source" id="toc-plan-add-csv-data-source" class="nav-link active" data-scroll-target="#plan-add-csv-data-source">Plan: Add CSV Data Source</a>
   <ul class="collapse">
-  <li><a href="#repository-pattern" id="toc-repository-pattern" class="nav-link" data-scroll-target="#repository-pattern">Repository Pattern</a></li>
-  <li><a href="#functional-core-imperative-shell" id="toc-functional-core-imperative-shell" class="nav-link" data-scroll-target="#functional-core-imperative-shell">Functional Core, Imperative Shell</a></li>
-  <li><a href="#dependency-injection" id="toc-dependency-injection" class="nav-link" data-scroll-target="#dependency-injection">Dependency Injection</a></li>
+  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context">Context</a></li>
+  <li><a href="#csv-column-schema" id="toc-csv-column-schema" class="nav-link" data-scroll-target="#csv-column-schema">CSV Column Schema</a></li>
+  <li><a href="#implementation-steps" id="toc-implementation-steps" class="nav-link" data-scroll-target="#implementation-steps">Implementation Steps</a>
+  <ul class="collapse">
+  <li><a href="#step-1-add-datasourceerror-to-srcexceptions.py" id="toc-step-1-add-datasourceerror-to-srcexceptions.py" class="nav-link" data-scroll-target="#step-1-add-datasourceerror-to-srcexceptions.py">Step 1: Add <code>DataSourceError</code> to <code>src/exceptions.py</code></a></li>
+  <li><a href="#step-2-create-srcprotocols.py" id="toc-step-2-create-srcprotocols.py" class="nav-link" data-scroll-target="#step-2-create-srcprotocols.py">Step 2: Create <code>src/protocols.py</code></a></li>
+  <li><a href="#step-3-create-srccsv_data_source.py" id="toc-step-3-create-srccsv_data_source.py" class="nav-link" data-scroll-target="#step-3-create-srccsv_data_source.py">Step 3: Create <code>src/csv_data_source.py</code></a></li>
+  <li><a href="#step-4-update-srcworkflow_manager.py" id="toc-step-4-update-srcworkflow_manager.py" class="nav-link" data-scroll-target="#step-4-update-srcworkflow_manager.py">Step 4: Update <code>src/workflow_manager.py</code></a></li>
+  <li><a href="#step-5-update-src__init__.py" id="toc-step-5-update-src__init__.py" class="nav-link" data-scroll-target="#step-5-update-src__init__.py">Step 5: Update <code>src/__init__.py</code></a></li>
+  <li><a href="#step-6-create-teststest_csv_data_source.py" id="toc-step-6-create-teststest_csv_data_source.py" class="nav-link" data-scroll-target="#step-6-create-teststest_csv_data_source.py">Step 6: Create <code>tests/test_csv_data_source.py</code></a></li>
+  <li><a href="#step-7-create-example-csv-and-update-docs" id="toc-step-7-create-example-csv-and-update-docs" class="nav-link" data-scroll-target="#step-7-create-example-csv-and-update-docs">Step 7: Create example CSV and update docs</a></li>
+  </ul></li>
+  <li><a href="#files-changed" id="toc-files-changed" class="nav-link" data-scroll-target="#files-changed">Files Changed</a></li>
+  <li><a href="#verification" id="toc-verification" class="nav-link" data-scroll-target="#verification">Verification</a></li>
   </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">System Architecture</h1>
-</div>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
 
 
-<div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>WireViz Generator Team </p>
-          </div>
-  </div>
-    
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">February 21, 2026</p>
-    </div>
-  </div>
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<section id="overview" class="level1">
-<h1>Overview</h1>
-<p>The <strong>WireViz YAML Generator</strong> is architected to separate <strong>Data Access</strong>, <strong>Business Logic</strong>, and <strong>Presentation</strong>. This ensures maintainability, testability, and type safety.</p>
+<section id="plan-add-csv-data-source" class="level1">
+<h1>Plan: Add CSV Data Source</h1>
+<section id="context" class="level2">
+<h2 class="anchored" data-anchor-id="context">Context</h2>
+<p>The library currently only reads from SQLite databases (4 tables: NetTable, DesignatorTable, ConnectorTable, CableTable). The user wants a simpler alternative: a <strong>single CSV file</strong> containing all data in a denormalized flat format (one row per wire/connection). This avoids needing to set up a SQLite database for smaller projects. The library is unreleased and personally used — no backward compatibility needed.</p>
+<p>The existing architecture already supports this cleanly: <code>WorkflowManager</code> uses dependency injection, and all transformation functions accept domain model objects — they don’t care where the data comes from.</p>
 </section>
-<section id="component-diagram" class="level1">
-<h1>Component Diagram</h1>
-<p>The following diagram illustrates the high-level components and their dependencies.</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">graph TD
-    User([User / CLI]) --&gt; Main[src/main.py]
-    
-    subgraph "Core Application"
-        Main --&gt; WM[Workflow Manager]
-        WM --&gt; Config[Config Loader]
-        WM --&gt; Repo[Data Access Repo]
-        WM --&gt; Logic[Transformation Engine]
-    end
-    
-    subgraph "Infrastructure"
-        Repo --&gt; DB[(SQLite Database)]
-        Logic --&gt; Images[Image Resources]
-    end
-    
-    subgraph "Output Adapters"
-        WM --&gt; YAML_Build[BuildYaml View]
-        WM --&gt; XLSX_Build[Excel Writer]
-    end
-    
-    subgraph "External Tools"
-        YAML_Build --&gt; WV[WireViz CLI]
-    end
-    
-    WV --&gt; Diagrams[PNG/SVG Drawings]
-    XLSX_Build --&gt; Spreadsheets[BOM / Labels]
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</section>
-<section id="module-responsibilities" class="level1">
-<h1>Module Responsibilities</h1>
+<section id="csv-column-schema" class="level2">
+<h2 class="anchored" data-anchor-id="csv-column-schema">CSV Column Schema</h2>
+<p>Each row = one wire connection, with connector/cable metadata inline.</p>
+<p><strong>Required columns</strong> (8 — enough for basic YAML generation):</p>
 <table class="caption-top table">
-<colgroup>
-<col style="width: 26%">
-<col style="width: 53%">
-<col style="width: 20%">
-</colgroup>
 <thead>
 <tr class="header">
-<th>Module</th>
-<th>Responsibility</th>
-<th>Type</th>
+<th>Column</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>main.py</code></td>
-<td>Entry point. Wires dependencies. Handles unexpected errors.</td>
-<td>Script</td>
+<td><code>cable_des</code></td>
+<td>Cable designator, e.g.&nbsp;<code>W001</code></td>
 </tr>
 <tr class="even">
-<td><code>workflow_manager.py</code></td>
-<td>Implementation of Use Cases (Generate BOM, Generate Diagram).</td>
-<td>Orchestrator</td>
+<td><code>comp_des_1</code></td>
+<td>Component designator — side 1</td>
 </tr>
 <tr class="odd">
-<td><code>data_access.py</code></td>
-<td>Abstraction over SQL. Returns immutable Data Classes.</td>
-<td>Repository</td>
+<td><code>conn_des_1</code></td>
+<td>Connector designator — side 1 (empty string if none)</td>
 </tr>
 <tr class="even">
-<td><code>transformations.py</code></td>
-<td>Pure Business Logic. Filters, Enriches, Validates.</td>
-<td>Functional Core</td>
+<td><code>pin_1</code></td>
+<td>Pin number — side 1</td>
 </tr>
 <tr class="odd">
-<td><code>models.py</code></td>
-<td>Type definitions (<code>Connector</code>, <code>Cable</code>, <code>Connection</code>).</td>
-<td>Domain</td>
+<td><code>comp_des_2</code></td>
+<td>Component designator — side 2</td>
 </tr>
 <tr class="even">
-<td><code>BuildYaml.py</code></td>
-<td>Converts Domain Objects to WireViz Dictionary format.</td>
-<td>View</td>
+<td><code>conn_des_2</code></td>
+<td>Connector designator — side 2 (empty string if none)</td>
+</tr>
+<tr class="odd">
+<td><code>pin_2</code></td>
+<td>Pin number — side 2</td>
+</tr>
+<tr class="even">
+<td><code>net_name</code></td>
+<td>Signal name</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Optional columns</strong> (10 — enable BOM, connector enrichment, cable specs):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>conn_mpn_1</code></td>
+<td>Connector MPN for side 1 endpoint</td>
+</tr>
+<tr class="even">
+<td><code>conn_mpn_2</code></td>
+<td>Connector MPN for side 2 endpoint</td>
+</tr>
+<tr class="odd">
+<td><code>pincount</code></td>
+<td>Pin count (associated with whichever MPN is first seen on this row)</td>
+</tr>
+<tr class="even">
+<td><code>mate_mpn</code></td>
+<td>Mating connector MPN</td>
+</tr>
+<tr class="odd">
+<td><code>pin_mpn</code></td>
+<td>Pin/terminal MPN</td>
+</tr>
+<tr class="even">
+<td><code>conn_description</code></td>
+<td>Connector description</td>
+</tr>
+<tr class="odd">
+<td><code>conn_manufacturer</code></td>
+<td>Connector manufacturer</td>
+</tr>
+<tr class="even">
+<td><code>wire_gauge</code></td>
+<td>Wire gauge in mm²</td>
+</tr>
+<tr class="odd">
+<td><code>length</code></td>
+<td>Cable length in mm</td>
+</tr>
+<tr class="even">
+<td><code>cable_note</code></td>
+<td>Construction note</td>
+</tr>
+</tbody>
+</table>
+<p>Connector catalog columns (<code>pincount</code> through <code>conn_manufacturer</code>) are deduplicated by MPN — only need to be specified once per unique connector, on the first row where that MPN appears.</p>
 </section>
-<section id="key-design-patterns" class="level1">
-<h1>Key Design Patterns</h1>
-<section id="repository-pattern" class="level2">
-<h2 class="anchored" data-anchor-id="repository-pattern">Repository Pattern</h2>
-<p>SQL logic is confined to <code>data_access.py</code>. The rest of the application works with objects (<code>ConnectorRow</code>), never <code>cursor</code> or <code>sql</code>.</p>
+<section id="implementation-steps" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-steps">Implementation Steps</h2>
+<section id="step-1-add-datasourceerror-to-srcexceptions.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-add-datasourceerror-to-srcexceptions.py">Step 1: Add <code>DataSourceError</code> to <code>src/exceptions.py</code></h3>
+<p>Add a new exception class under the existing hierarchy:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DataSourceError(WireVizError):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Raised when a data source cannot be read."""</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="functional-core-imperative-shell" class="level2">
-<h2 class="anchored" data-anchor-id="functional-core-imperative-shell">Functional Core, Imperative Shell</h2>
+<section id="step-2-create-srcprotocols.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-create-srcprotocols.py">Step 2: Create <code>src/protocols.py</code></h3>
+<p>Define a <code>DataSourceProtocol</code> using <code>typing.Protocol</code> with the 5 methods that both <code>SqliteDataSource</code> and <code>CsvDataSource</code> share: - <code>check_cable_existence(cable_des: str) -&gt; bool</code> - <code>load_net_table(cable_des_filter: str = "") -&gt; list[NetRow]</code> - <code>load_designator_table() -&gt; list[DesignatorRow]</code> - <code>load_connector_table() -&gt; list[ConnectorRow]</code> - <code>load_cable_table() -&gt; list[CableRow]</code></p>
+<p><code>SqliteDataSource</code> already satisfies this structurally — no changes needed to <code>src/data_access.py</code>.</p>
+</section>
+<section id="step-3-create-srccsv_data_source.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-create-srccsv_data_source.py">Step 3: Create <code>src/csv_data_source.py</code></h3>
+<p>New <code>CsvDataSource</code> class: - <code>__init__(csv_filepath: str)</code> — parse CSV once via <code>csv.DictReader</code>, store rows in memory, validate required columns exist - <code>check_cable_existence()</code> — scan stored rows - <code>load_net_table()</code> — map required columns to <code>NetRow</code>, optional filter by <code>cable_des</code> - <code>load_designator_table()</code> — extract unique <code>(comp_des, conn_des, conn_mpn)</code> triples from both <code>conn_mpn_1</code> and <code>conn_mpn_2</code> columns. Skip rows where the MPN column is missing/empty - <code>load_connector_table()</code> — extract unique connector catalog entries keyed by MPN. Only create <code>ConnectorRow</code> when <code>pincount</code>+<code>mate_mpn</code>+<code>pin_mpn</code> are all present - <code>load_cable_table()</code> — extract unique cable entries keyed by <code>cable_des</code>. Only create <code>CableRow</code> when <code>wire_gauge</code>+<code>length</code> are present</p>
+<p>Raises <code>DataSourceError</code> on missing file, empty CSV, or missing required columns.</p>
+</section>
+<section id="step-4-update-srcworkflow_manager.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-update-srcworkflow_manager.py">Step 4: Update <code>src/workflow_manager.py</code></h3>
+<p>Change constructor type hint from <code>SqliteDataSource</code> to <code>DataSourceProtocol</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> protocols <span class="im">import</span> DataSourceProtocol</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> WorkflowManager:</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, data_source: DataSourceProtocol):</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="step-5-update-src__init__.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-update-src__init__.py">Step 5: Update <code>src/__init__.py</code></h3>
+<p>Add exports: <code>CsvDataSource</code>, <code>DataSourceProtocol</code>, <code>DataSourceError</code>.</p>
+</section>
+<section id="step-6-create-teststest_csv_data_source.py" class="level3">
+<h3 class="anchored" data-anchor-id="step-6-create-teststest_csv_data_source.py">Step 6: Create <code>tests/test_csv_data_source.py</code></h3>
+<p>Tests using <code>tmp_path</code> fixture with CSV strings: 1. <code>test_load_net_table_all</code> — all rows returned as NetRow 2. <code>test_load_net_table_filtered</code> — filter by cable_des 3. <code>test_check_cable_existence</code> — True/False cases 4. <code>test_load_designator_table_dedup</code> — no duplicates from repeated rows 5. <code>test_load_designator_table_both_sides</code> — extracts from both conn_mpn_1 and conn_mpn_2 6. <code>test_load_connector_table_dedup</code> — single entry per MPN 7. <code>test_load_connector_table_missing_catalog</code> — graceful empty result 8. <code>test_load_cable_table_dedup</code> — single entry per cable_des 9. <code>test_load_cable_table_missing_columns</code> — graceful empty result 10. <code>test_missing_required_columns</code> — DataSourceError raised 11. <code>test_empty_csv</code> — DataSourceError raised 12. <code>test_file_not_found</code> — DataSourceError raised 13. <code>test_minimal_csv_only_required</code> — net table works, other tables return empty 14. <code>test_csv_with_workflow_manager</code> — end-to-end: CsvDataSource → WorkflowManager → YAML output</p>
+</section>
+<section id="step-7-create-example-csv-and-update-docs" class="level3">
+<h3 class="anchored" data-anchor-id="step-7-create-example-csv-and-update-docs">Step 7: Create example CSV and update docs</h3>
 <ul>
-<li><strong>Shell</strong>: <code>main.py</code> and <code>workflow_manager.py</code> handle I/O (reading files, printing status).</li>
-<li><strong>Core</strong>: <code>transformations.py</code> is purely functional. It takes data in and returns data out, without side effects.</li>
+<li>Create <code>examples/example_input.csv</code> — sample CSV with both required and optional columns</li>
+<li>Update <code>docs/API.md</code> — add a “CSV Input (Alternative)” section documenting the column schema, usage example, and deduplication rules. Add <code>CsvDataSource</code> to the Data Access Layer section alongside <code>SqliteDataSource</code>. Add <code>DataSourceProtocol</code> reference.</li>
 </ul>
 </section>
-<section id="dependency-injection" class="level2">
-<h2 class="anchored" data-anchor-id="dependency-injection">Dependency Injection</h2>
-<p><code>WorkflowManager</code> receives its <code>SqliteDataSource</code> instance from <code>main.py</code>. This allows swapping the database for a mock during testing (if needed in the future).</p>
+</section>
+<section id="files-changed" class="level2">
+<h2 class="anchored" data-anchor-id="files-changed">Files Changed</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>src/exceptions.py</code></td>
+<td>Add <code>DataSourceError</code></td>
+</tr>
+<tr class="even">
+<td><code>src/protocols.py</code></td>
+<td><strong>New</strong> — <code>DataSourceProtocol</code></td>
+</tr>
+<tr class="odd">
+<td><code>src/csv_data_source.py</code></td>
+<td><strong>New</strong> — <code>CsvDataSource</code></td>
+</tr>
+<tr class="even">
+<td><code>src/workflow_manager.py</code></td>
+<td>Change type hint to <code>DataSourceProtocol</code></td>
+</tr>
+<tr class="odd">
+<td><code>src/__init__.py</code></td>
+<td>Add new exports</td>
+</tr>
+<tr class="even">
+<td><code>tests/test_csv_data_source.py</code></td>
+<td><strong>New</strong> — all CSV tests</td>
+</tr>
+<tr class="odd">
+<td><code>examples/example_input.csv</code></td>
+<td><strong>New</strong> — sample CSV</td>
+</tr>
+<tr class="even">
+<td><code>docs/API.md</code></td>
+<td>Add CSV format docs</td>
+</tr>
+</tbody>
+</table>
+<p>Files <strong>not</strong> changed: <code>src/data_access.py</code>, <code>src/models.py</code>, <code>src/transformations.py</code>, <code>src/BuildYaml.py</code>, <code>src/main.py</code>, existing tests.</p>
+</section>
+<section id="verification" class="level2">
+<h2 class="anchored" data-anchor-id="verification">Verification</h2>
+<ol type="1">
+<li><code>pytest</code> — all existing tests still pass + new CSV tests pass</li>
+<li><code>uv run ruff check &amp;&amp; uv run ruff format --check</code> — no lint issues</li>
+<li><code>uv run ty check</code> — no new type errors</li>
+<li>Manual: create a CSV from <code>examples/example_input.csv</code>, instantiate <code>CsvDataSource</code>, pass to <code>WorkflowManager</code>, verify YAML output matches expected structure</li>
+</ol>
 
 
 </section>
