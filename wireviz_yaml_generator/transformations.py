@@ -140,21 +140,27 @@ def process_cables(net_rows: list[NetRow], cable_rows: list[CableRow]) -> list[C
     for cable_des, wires in aggregated_wires.items():
         gauge = None
         notes = None
+        category = "bundle"
+        colors = None
 
         matched_row = cable_meta_map.get(cable_des)
         if matched_row:
             gauge = matched_row.wire_gauge
             notes = matched_row.note
+            category = matched_row.category
+            if matched_row.colors:
+                colors = matched_row.colors.split(":")
 
         cable_data.append(
             Cable(
                 designator=cable_des,
                 wire_count=len(wires),
                 wire_labels=wires,
-                category="bundle",
+                category=category,
                 gauge=gauge,
                 notes=notes,
                 gauge_unit="mm2",
+                colors=colors,
             )
         )
 
@@ -220,6 +226,7 @@ def fill_missing_connectors(
     connectors: list[Connector],
     connections: list[Connection],
     pins_last: list[str] | None = None,
+    connector_overrides: dict[str, dict[str, Any]] | None = None,
 ) -> list[Connector]:
     """Add minimal connector entries for designators referenced in connections but missing from connectors.
 
@@ -230,8 +237,12 @@ def fill_missing_connectors(
     Args:
         pins_last: Pin name substrings that should sort to the end
                    (e.g. ``["PE"]`` places protective-earth pins last).
+        connector_overrides: Mapping from designator to WireViz connector
+                   fields (type, subtype, style, notes) to apply when
+                   creating stub connectors.
     """
     existing = {c.designator for c in connectors}
+    overrides = connector_overrides or {}
 
     # Collect unique pins per designator from connections
     pin_sets: dict[str, set[str]] = {}
@@ -240,16 +251,24 @@ def fill_missing_connectors(
         pin_sets.setdefault(conn.to_designator, set()).add(conn.to_pin)
 
     missing = sorted(pin_sets.keys() - existing, key=_natural_sort_key)
-    return connectors + [
-        Connector(
-            designator=d,
-            pins=sorted(
-                [_to_pin_value(p) for p in pin_sets[d]],
-                key=lambda p: _pin_sort_key(p, pins_last),
-            ),
+    result: list[Connector] = []
+    for d in missing:
+        ovr = overrides.get(d, {})
+        result.append(
+            Connector(
+                designator=d,
+                pins=sorted(
+                    [_to_pin_value(p) for p in pin_sets[d]],
+                    key=lambda p: _pin_sort_key(p, pins_last),
+                ),
+                show_pincount=False,
+                type=ovr.get("type"),
+                subtype=ovr.get("subtype"),
+                style=ovr.get("style"),
+                notes=ovr.get("notes"),
+            )
         )
-        for d in missing
-    ]
+    return connectors + result
 
 
 def generate_bom_data(

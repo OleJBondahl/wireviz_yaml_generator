@@ -43,6 +43,9 @@ class Connector:
     hide_disconnected_pins: bool = False
     show_pincount: bool = True
     notes: str | None = None
+    type: str | None = None
+    subtype: str | None = None
+    style: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +86,7 @@ class Cable:
     length_unit: str = "mm"
     gauge: float | None = None
     gauge_unit: str = "mm2"
+    colors: list[str] | None = None
     notes: str | None = None
 
 
@@ -168,5 +172,7 @@ class CableRow:
 
     cable_des: str
     wire_gauge: float
-    length: float
-    note: str
+    length: float = 0.0
+    note: str = ""
+    category: str = "bundle"
+    colors: str = ""

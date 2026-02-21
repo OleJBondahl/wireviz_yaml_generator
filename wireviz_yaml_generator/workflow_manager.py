@@ -130,6 +130,7 @@ class WorkflowManager:
         yaml_filepath: str,
         available_images: set[str],
         pins_last: list[str] | None = None,
+        connector_overrides: dict[str, dict] | None = None,
     ) -> None:
         """
         Generates a WireViz YAML file for a single cable.
@@ -173,7 +174,9 @@ class WorkflowManager:
 
         # Fill in connector stubs for designators referenced in connections
         # but not found via the catalog/designator flow
-        connector_data = transformations.fill_missing_connectors(connector_data, connection_data, pins_last=pins_last)
+        connector_data = transformations.fill_missing_connectors(
+            connector_data, connection_data, pins_last=pins_last, connector_overrides=connector_overrides
+        )
 
         # Build View
         BuildYaml.build_yaml_file(

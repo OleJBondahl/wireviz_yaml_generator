@@ -50,6 +50,9 @@ def connector_to_dict(c: Connector) -> dict[str, Any]:
         Dict[str, Any]: A dictionary matching the 'connectors' section of WireViz YAML.
     """
     d = {
+        "type": c.type,
+        "subtype": c.subtype,
+        "style": c.style,
         "mpn": c.mpn,
         "pins": c.pins,
         "pincount": c.pincount if not c.pins else None,
@@ -80,6 +83,7 @@ def cable_to_dict(c: Cable) -> dict[str, Any]:
         "category": c.category,
         "gauge": c.gauge,
         "gauge_unit": c.gauge_unit,
+        "colors": c.colors,
         "notes": c.notes,
         "wirelabels": c.wire_labels,
     }

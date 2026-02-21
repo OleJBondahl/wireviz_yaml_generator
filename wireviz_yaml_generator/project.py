@@ -5,8 +5,10 @@ Orchestrates the entire pipeline: data source -> YAML -> WireViz SVG -> PDF.
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from wireviz_yaml_generator.exceptions import ConfigurationError
@@ -58,6 +60,9 @@ class Project:
         skip_cables: list[int] | None = None,
         # Pin ordering
         pins_last: list[str] | None = None,
+        # Connector overrides
+        connector_overrides: dict[str, dict] | None = None,
+        terminal_connector: dict[str, str] | None = None,
         # Display
         cable_titles: dict[str, str] | None = None,
         # Output directories
@@ -83,6 +88,8 @@ class Project:
         self._auto_generate_cable_des = auto_generate_cable_des
         self._cable_prefix = cable_prefix
         self._pins_last = pins_last
+        self._connector_overrides = connector_overrides or {}
+        self._terminal_connector = terminal_connector
         self._cable_titles = cable_titles or {}
 
         self.cable_start = cable_start
@@ -134,9 +141,9 @@ class Project:
                 create_labels=create_labels,
             )
 
-        # YAML + SVG generation
+        # Phase 1: YAML generation (sequential — fast, in-memory work)
         wireviz_executable = shutil.which("wireviz")
-        svg_paths: list[tuple[str, str]] = []  # (cable_des, svg_path)
+        yaml_files: list[tuple[str, str]] = []  # (cable_des, yaml_filepath)
 
         for cable_filter in cable_filters:
             if not data_source.check_cable_existence(cable_filter):
@@ -145,26 +152,26 @@ class Project:
 
             yaml_filepath = str(Path(self.yaml_dir) / f"{cable_filter}.yaml")
 
-            workflow.run_yaml_workflow(cable_filter, yaml_filepath, available_images, pins_last=self._pins_last)
+            # Build per-cable connector overrides by filtering the project-level overrides
+            cable_overrides = (
+                {des: ovr for des, ovr in self._connector_overrides.items()} if self._connector_overrides else None
+            )
 
-            if wireviz_executable:
-                svg_path = str(Path(self.drawings_dir) / f"{cable_filter}.svg")
-                command = [
-                    wireviz_executable,
-                    yaml_filepath,
-                    "--format",
-                    "s",
-                    "--output-dir",
-                    self.drawings_dir,
-                ]
-                try:
-                    subprocess.run(command, check=True, capture_output=True, text=True)
-                    svg_paths.append((cable_filter, svg_path))
-                    print(f"   Diagram generated for {cable_filter}")
-                except subprocess.CalledProcessError as e:
-                    print(f"   WireViz Error for {cable_filter}: {e.stderr}")
-            else:
-                # No wireviz CLI, check if SVG already exists
+            workflow.run_yaml_workflow(
+                cable_filter,
+                yaml_filepath,
+                available_images,
+                pins_last=self._pins_last,
+                connector_overrides=cable_overrides,
+            )
+            yaml_files.append((cable_filter, yaml_filepath))
+
+        # Phase 2: WireViz SVG generation (parallel subprocess calls)
+        svg_paths: list[tuple[str, str]] = []
+        if wireviz_executable and yaml_files:
+            svg_paths = self._run_wireviz_parallel(wireviz_executable, yaml_files)
+        elif not wireviz_executable:
+            for cable_filter, _ in yaml_files:
                 svg_path = str(Path(self.drawings_dir) / f"{cable_filter}.svg")
                 if Path(svg_path).exists():
                     svg_paths.append((cable_filter, svg_path))
@@ -202,6 +209,37 @@ class Project:
         if not resource_path.is_dir():
             return set()
         return {f.name for f in resource_path.glob("*.png")}
+
+    def _run_wireviz_parallel(
+        self,
+        executable: str,
+        yaml_files: list[tuple[str, str]],
+    ) -> list[tuple[str, str]]:
+        """Run WireViz CLI on multiple YAML files in parallel."""
+        max_workers = min(8, os.cpu_count() or 4)
+
+        def _invoke(cable_filter: str, yaml_filepath: str) -> tuple[str, str, str | None]:
+            svg_path = str(Path(self.drawings_dir) / f"{cable_filter}.svg")
+            command = [executable, yaml_filepath, "--format", "s", "--output-dir", self.drawings_dir]
+            try:
+                subprocess.run(command, check=True, capture_output=True, text=True)
+                return (cable_filter, svg_path, None)
+            except subprocess.CalledProcessError as e:
+                return (cable_filter, svg_path, e.stderr)
+
+        svg_paths: list[tuple[str, str]] = []
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = {pool.submit(_invoke, cf, yf): cf for cf, yf in yaml_files}
+            for future in as_completed(futures):
+                cable_filter, svg_path, error = future.result()
+                if error:
+                    print(f"   WireViz Error for {cable_filter}: {error}")
+                else:
+                    svg_paths.append((cable_filter, svg_path))
+                    print(f"   Diagram generated for {cable_filter}")
+
+        svg_paths.sort(key=lambda x: x[0])
+        return svg_paths
 
     def _build_pdf(self, pdf_path: str, svg_paths: list[tuple[str, str]]) -> None:
         """Compile the PDF document from collected content."""

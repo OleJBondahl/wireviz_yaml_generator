@@ -180,20 +180,29 @@ class CsvDataSource:
             gauge_str = self._get(row, "wire_gauge")
             length_str = self._get(row, "length")
 
-            if not (gauge_str and length_str):
+            if not gauge_str:
                 continue
 
             try:
                 wire_gauge = float(gauge_str)
-                length = float(length_str)
             except ValueError:
                 continue
+
+            try:
+                length = float(length_str) if length_str else 0.0
+            except ValueError:
+                length = 0.0
+
+            category = self._get(row, "category") or "bundle"
+            colors = self._get(row, "colors")
 
             seen[cable_des] = CableRow(
                 cable_des=cable_des,
                 wire_gauge=wire_gauge,
                 length=length,
                 note=self._get(row, "cable_note"),
+                category=category,
+                colors=colors,
             )
 
         return list(seen.values())

@@ -117,9 +117,9 @@ class TestDiagramPage:
         compiler = HarnessDocCompiler(config)
         compiler.add_diagram_page("W001", "drawings/harness/W001.svg")
         content = compiler.build_typst_string()
-        assert "Cable nr: W001" in content
+        assert "=== W001" in content
         assert '#image("drawings/harness/W001.svg", width: 100%)' in content
-        assert "Length of wires:" in content
+        assert "Length:" in content
         assert "#block(breakable: false)" in content
 
     def test_diagram_page_absolute_path(self, config, tmp_path):
@@ -128,7 +128,7 @@ class TestDiagramPage:
         compiler = HarnessDocCompiler(config)
         compiler.add_diagram_page("W002", abs_svg)
         content = compiler.build_typst_string()
-        assert "Cable nr: W002" in content
+        assert "=== W002" in content
         # Path should be converted to relative
         assert str(tmp_path).replace("\\", "/") not in content or "drawings" in content
 
