@@ -46,6 +46,7 @@ class Connector:
     type: str | None = None
     subtype: str | None = None
     style: str | None = None
+    loops: list[list[int | str]] | None = None
 
 
 @dataclass(frozen=True)

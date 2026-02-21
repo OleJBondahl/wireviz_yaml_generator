@@ -254,18 +254,24 @@ def fill_missing_connectors(
     result: list[Connector] = []
     for d in missing:
         ovr = overrides.get(d, {})
+        if "pins" in ovr:
+            # Use override pins (preserves full pin list including unconnected pins)
+            pins = [_to_pin_value(p) for p in ovr["pins"]]
+        else:
+            pins = sorted(
+                [_to_pin_value(p) for p in pin_sets[d]],
+                key=lambda p: _pin_sort_key(p, pins_last),
+            )
         result.append(
             Connector(
                 designator=d,
-                pins=sorted(
-                    [_to_pin_value(p) for p in pin_sets[d]],
-                    key=lambda p: _pin_sort_key(p, pins_last),
-                ),
+                pins=pins,
                 show_pincount=False,
                 type=ovr.get("type"),
                 subtype=ovr.get("subtype"),
                 style=ovr.get("style"),
                 notes=ovr.get("notes"),
+                loops=ovr.get("loops"),
             )
         )
     return connectors + result

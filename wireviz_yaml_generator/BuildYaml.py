@@ -60,6 +60,7 @@ def connector_to_dict(c: Connector) -> dict[str, Any]:
         "show_pincount": c.show_pincount if not c.show_pincount else None,
         "hide_disconnected_pins": c.hide_disconnected_pins if c.hide_disconnected_pins else None,
         "notes": c.notes,
+        "loops": c.loops,
     }
 
     if c.image_src:
