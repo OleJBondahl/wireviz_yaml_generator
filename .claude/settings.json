@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-python.sh\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Edit(src/**)",
+      "Edit(tests/**)",
+      "Edit(CLAUDE.md)",
+      "Write(src/**)",
+      "Write(tests/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git checkout -- *)"
+    ]
+  },
+  "respectGitignore": true
+}
