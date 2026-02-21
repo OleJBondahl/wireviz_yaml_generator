@@ -22,7 +22,7 @@ Architecture:
 """
 
 from typing import Set, List
-from data_access import SqliteDataSource
+from protocols import DataSourceProtocol
 from models import NetRow, CableRow, ConnectorRow, DesignatorRow
 import transformations
 import BuildYaml
@@ -44,7 +44,7 @@ class WorkflowManager:
         >>> workflow = WorkflowManager(db)
         >>> workflow.run_attachment_workflow(["W001", "W002"], "output/")
     """
-    def __init__(self, data_source: SqliteDataSource):
+    def __init__(self, data_source: DataSourceProtocol):
         """
         Initializes the workflow manager with a data source.
         

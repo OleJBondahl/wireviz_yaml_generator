@@ -25,7 +25,11 @@ from .exceptions import (
     WireVizError,
     ConfigurationError,
     DatabaseError,
+    DataSourceError,
 )
+
+from .protocols import DataSourceProtocol
+from .csv_data_source import CsvDataSource
 
 __all__ = [
     "Connector",
@@ -40,4 +44,7 @@ __all__ = [
     "WireVizError",
     "ConfigurationError",
     "DatabaseError",
+    "DataSourceError",
+    "DataSourceProtocol",
+    "CsvDataSource",
 ]

@@ -4,7 +4,11 @@ This document describes the data models, database schema, and public functions t
 
 ---
 
-## Database Schema (Input)
+## Data Sources (Input)
+
+The library supports two input formats: **SQLite database** (original) and **CSV file** (simpler alternative). Both produce the same domain models and can be used interchangeably via `DataSourceProtocol`.
+
+### SQLite Database
 
 The library reads from a SQLite database with four tables. All columns are required unless noted.
 
@@ -56,6 +60,57 @@ Physical properties for each cable.
 | `wire_gauge` | `REAL` | Wire gauge in mm² |
 | `length` | `REAL` | Cable length in mm |
 | `note` | `TEXT` | Construction note (appears in YAML output) |
+
+### CSV File (Alternative)
+
+A single denormalized CSV file where each row represents one wire connection with optional inline metadata. Avoids the need for a SQLite database for simpler projects.
+
+**Required columns** (8 — enough for basic YAML generation):
+
+| Column | Description |
+|---|---|
+| `cable_des` | Cable designator (e.g., `"W001"`) |
+| `comp_des_1` | Component designator — side 1 |
+| `conn_des_1` | Connector designator — side 1 (empty string if none) |
+| `pin_1` | Pin number — side 1 |
+| `comp_des_2` | Component designator — side 2 |
+| `conn_des_2` | Connector designator — side 2 (empty string if none) |
+| `pin_2` | Pin number — side 2 |
+| `net_name` | Signal name |
+
+**Optional columns** (10 — enable BOM, connector enrichment, cable specs):
+
+| Column | Description |
+|---|---|
+| `conn_mpn_1` | Connector MPN for side 1 endpoint |
+| `conn_mpn_2` | Connector MPN for side 2 endpoint |
+| `pincount` | Pin count (associated with whichever MPN is first seen) |
+| `mate_mpn` | Mating connector MPN |
+| `pin_mpn` | Pin/terminal MPN |
+| `conn_description` | Connector description |
+| `conn_manufacturer` | Connector manufacturer |
+| `wire_gauge` | Wire gauge in mm² |
+| `length` | Cable length in mm |
+| `cable_note` | Construction note |
+
+**Deduplication rules:**
+- Connector catalog columns (`pincount` through `conn_manufacturer`) only need to be specified on the first row where a given MPN appears.
+- `load_designator_table()` extracts unique `(comp_des, conn_des, conn_mpn)` triples from both sides.
+- `load_connector_table()` creates one `ConnectorRow` per unique MPN (requires `pincount`, `mate_mpn`, and `pin_mpn` all present).
+- `load_cable_table()` creates one `CableRow` per unique `cable_des` (requires both `wire_gauge` and `length`).
+
+**Usage:**
+
+```python
+from csv_data_source import CsvDataSource
+from workflow_manager import WorkflowManager
+
+ds = CsvDataSource("path/to/input.csv")
+wm = WorkflowManager(ds)
+wm.run_yaml_workflow("W001", "output/W001.yaml", available_images=set())
+```
+
+See `examples/example_input.csv` for a sample file.
 
 ---
 
@@ -297,13 +352,12 @@ connections:
   - [{from: pin}, {cable: pin}, {to: pin}]
 ```
 
-### Data Access Layer (`src/data_access.py`)
+### Data Access Layer
 
-#### `SqliteDataSource`
+#### `DataSourceProtocol` (`src/protocols.py`)
 
 ```python
-class SqliteDataSource:
-    def __init__(self, db_filepath: str): ...
+class DataSourceProtocol(Protocol):
     def check_cable_existence(self, cable_des: str) -> bool: ...
     def load_net_table(self, cable_des_filter: str = "") -> list[NetRow]: ...
     def load_designator_table(self) -> list[DesignatorRow]: ...
@@ -311,7 +365,25 @@ class SqliteDataSource:
     def load_cable_table(self) -> list[CableRow]: ...
 ```
 
+Structural interface satisfied by both `SqliteDataSource` and `CsvDataSource`.
+
+#### `SqliteDataSource` (`src/data_access.py`)
+
+```python
+class SqliteDataSource:
+    def __init__(self, db_filepath: str): ...
+```
+
 Raises `DatabaseError` (subclass of `WireVizError`) on SQLite failures.
+
+#### `CsvDataSource` (`src/csv_data_source.py`)
+
+```python
+class CsvDataSource:
+    def __init__(self, csv_filepath: str): ...
+```
+
+Raises `DataSourceError` (subclass of `WireVizError`) on missing file, empty CSV, or missing required columns.
 
 ### Orchestration (`src/workflow_manager.py`)
 
@@ -319,7 +391,7 @@ Raises `DatabaseError` (subclass of `WireVizError`) on SQLite failures.
 
 ```python
 class WorkflowManager:
-    def __init__(self, data_source: SqliteDataSource): ...
+    def __init__(self, data_source: DataSourceProtocol): ...
 
     def run_yaml_workflow(
         self,
