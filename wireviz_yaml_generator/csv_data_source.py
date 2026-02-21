@@ -3,8 +3,8 @@
 import csv
 from pathlib import Path
 
-from exceptions import DataSourceError
-from models import CableRow, ConnectorRow, DesignatorRow, NetRow
+from .exceptions import DataSourceError
+from .models import CableRow, ConnectorRow, DesignatorRow, NetRow
 
 REQUIRED_COLUMNS = frozenset(
     {

@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from models import CableRow, ConnectorRow, DesignatorRow, NetRow
+from .models import CableRow, ConnectorRow, DesignatorRow, NetRow
 
 
 class DataSourceProtocol(Protocol):

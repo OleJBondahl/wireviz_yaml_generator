@@ -2,8 +2,8 @@
 
 import pytest
 from conftest import make_net_row, make_designator_row, make_connector_row, make_cable_row
-from models import NetRow, DesignatorRow, ConnectorRow, CableRow
-from transformations import (
+from wireviz_yaml_generator.models import NetRow, DesignatorRow, ConnectorRow, CableRow
+from wireviz_yaml_generator.transformations import (
     process_connectors,
     process_cables,
     process_connections,

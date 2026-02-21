@@ -5,7 +5,7 @@ import yaml
 from unittest.mock import MagicMock
 
 from conftest import make_net_row, make_designator_row, make_connector_row, make_cable_row
-from workflow_manager import WorkflowManager
+from wireviz_yaml_generator.workflow_manager import WorkflowManager
 
 
 def _build_mock_source(net_rows, designator_rows, connector_rows, cable_rows):

@@ -11,7 +11,7 @@ It uses Pure Functions for conversion to ensure testability.
 
 import yaml
 from typing import List, Dict, Any, Optional
-from models import Connector, Cable, Connection
+from .models import Connector, Cable, Connection
 
 # --- Pure Conversion Functions ---
 

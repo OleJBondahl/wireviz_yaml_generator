@@ -55,15 +55,15 @@ Repository = "https://github.com/OleJBondahl/wireviz_yaml_generator"
 Issues = "https://github.com/OleJBondahl/wireviz_yaml_generator/issues"
 
 [project.scripts]
-wireviz-generator = "src.main:main"
+wireviz-generator = "wireviz_yaml_generator.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["wireviz_yaml_generator"]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 120
-src = ["src", "tests"]
+src = ["wireviz_yaml_generator", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]

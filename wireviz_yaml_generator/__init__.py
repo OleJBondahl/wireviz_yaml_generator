@@ -30,6 +30,7 @@ from .exceptions import (
 
 from .protocols import DataSourceProtocol
 from .csv_data_source import CsvDataSource
+from .workflow_manager import WorkflowManager
 
 __all__ = [
     "Connector",
@@ -47,4 +48,5 @@ __all__ = [
     "DataSourceError",
     "DataSourceProtocol",
     "CsvDataSource",
+    "WorkflowManager",
 ]

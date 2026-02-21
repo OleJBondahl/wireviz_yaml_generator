@@ -22,11 +22,11 @@ Architecture:
 """
 
 from typing import Set, List
-from protocols import DataSourceProtocol
-from models import NetRow, CableRow, ConnectorRow, DesignatorRow
-import transformations
-import BuildYaml
-import excel_writer
+from .protocols import DataSourceProtocol
+from .models import NetRow, CableRow, ConnectorRow, DesignatorRow
+from . import transformations
+from . import BuildYaml
+from . import excel_writer
 
 class WorkflowManager:
     """

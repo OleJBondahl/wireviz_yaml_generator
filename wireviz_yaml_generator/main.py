@@ -28,10 +28,10 @@ import subprocess
 from pathlib import Path
 from typing import Set
 
-from exceptions import WireVizError
-from ReadConfig import ConfigLoader
-from data_access import SqliteDataSource
-from workflow_manager import WorkflowManager
+from .exceptions import WireVizError
+from .ReadConfig import ConfigLoader
+from .data_access import SqliteDataSource
+from .workflow_manager import WorkflowManager
 
 def get_available_images(resource_path: Path) -> Set[str]:
     """

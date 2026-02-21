@@ -23,7 +23,7 @@ Design Pattern:
 import tomllib
 from pathlib import Path
 from typing import Any, Dict, Optional
-from exceptions import ConfigurationError
+from .exceptions import ConfigurationError
 
 SCRIPT_PATH = Path(__file__).resolve()
 PROJECT_ROOT = SCRIPT_PATH.parent.parent

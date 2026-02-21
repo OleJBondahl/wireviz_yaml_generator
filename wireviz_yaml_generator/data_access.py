@@ -26,8 +26,8 @@ Example:
 
 import sqlite3
 from typing import List, Dict, Any
-from models import NetRow, DesignatorRow, ConnectorRow, CableRow
-from exceptions import DatabaseError
+from .models import NetRow, DesignatorRow, ConnectorRow, CableRow
+from .exceptions import DatabaseError
 
 class SqliteDataSource:
     """

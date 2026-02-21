@@ -7,7 +7,7 @@ It includes no I/O operations (no database access, no file writing).
 
 from typing import List, Dict, Any, Set, Optional
 import re
-from models import (
+from .models import (
     NetRow,
     DesignatorRow,
     ConnectorRow,

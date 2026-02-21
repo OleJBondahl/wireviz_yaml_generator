@@ -2,8 +2,8 @@
 
 import pytest
 import yaml
-from models import Connector, Cable, Connection
-from BuildYaml import connector_to_dict, cable_to_dict, connection_to_list, _clean_dict, build_yaml_file
+from wireviz_yaml_generator.models import Connector, Cable, Connection
+from wireviz_yaml_generator.BuildYaml import connector_to_dict, cable_to_dict, connection_to_list, _clean_dict, build_yaml_file
 
 def test_clean_dict():
     """Test that None values and empty containers are removed from dictionaries."""
