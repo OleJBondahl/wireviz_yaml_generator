@@ -27,7 +27,8 @@ class Project:
             version="02",
             date="19/01/2026",
             logo="src/ZENLogo.png",
-            db="data/master.db",
+            db="data/master.db", # choose between db or csv
+            csv="data/master.csv",
             cable_start=1,
             cable_end=44,
             skip_cables=[10, 21, 32, 43],
