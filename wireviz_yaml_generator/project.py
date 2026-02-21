@@ -147,7 +147,6 @@ class Project:
 
         for cable_filter in cable_filters:
             if not data_source.check_cable_existence(cable_filter):
-                print(f"   Skipping {cable_filter}. No data found.")
                 continue
 
             yaml_filepath = str(Path(self.yaml_dir) / f"{cable_filter}.yaml")
@@ -166,10 +165,13 @@ class Project:
             )
             yaml_files.append((cable_filter, yaml_filepath))
 
+        print(f"YAML generated for {len(yaml_files)} cables.")
+
         # Phase 2: WireViz SVG generation (parallel subprocess calls)
         svg_paths: list[tuple[str, str]] = []
         if wireviz_executable and yaml_files:
             svg_paths = self._run_wireviz_parallel(wireviz_executable, yaml_files)
+            print(f"SVG diagrams generated for {len(svg_paths)} cables.")
         elif not wireviz_executable:
             for cable_filter, _ in yaml_files:
                 svg_path = str(Path(self.drawings_dir) / f"{cable_filter}.svg")
@@ -233,10 +235,9 @@ class Project:
             for future in as_completed(futures):
                 cable_filter, svg_path, error = future.result()
                 if error:
-                    print(f"   WireViz Error for {cable_filter}: {error}")
+                    print(f"WireViz error for {cable_filter}: {error}")
                 else:
                     svg_paths.append((cable_filter, svg_path))
-                    print(f"   Diagram generated for {cable_filter}")
 
         svg_paths.sort(key=lambda x: x[0])
         return svg_paths
@@ -281,4 +282,4 @@ class Project:
         Path(pdf_path).parent.mkdir(parents=True, exist_ok=True)
 
         compiler.compile(pdf_path)
-        print(f"   PDF generated: {pdf_path}")
+        print(f"PDF generated: {pdf_path}")

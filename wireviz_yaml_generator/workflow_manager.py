@@ -104,7 +104,6 @@ class WorkflowManager:
         designator_rows = self._source.load_designator_table()
 
         if create_bom:
-            print("ℹ️  Creating BOM...")
             bom_data = transformations.generate_bom_data(
                 net_rows=net_rows,
                 designator_rows=designator_rows,
@@ -113,16 +112,21 @@ class WorkflowManager:
             )
             bom_data = excel_writer.add_misc_bom_items(bom_data, "MiscBOM", output_path)
             excel_writer.write_xlsx(bom_data, "BOM", output_path)
-            print("✅  BOM created.")
 
         if create_labels:
-            print("ℹ️  Creating LabelLists...")
             cable_labels = transformations.generate_cable_labels(net_rows)
             wire_labels = transformations.generate_wire_labels(net_rows)
 
             excel_writer.write_xlsx(cable_labels, "Cablelabels", output_path)
             excel_writer.write_xlsx(wire_labels, "WireLabels", output_path)
-            print("✅  LabelLists created.")
+
+        parts = []
+        if create_bom:
+            parts.append("BOM")
+        if create_labels:
+            parts.append("labels")
+        if parts:
+            print(f"Attachments created: {', '.join(parts)}.")
 
     def run_yaml_workflow(
         self,
