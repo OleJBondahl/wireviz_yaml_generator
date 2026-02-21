@@ -242,7 +242,7 @@ def fill_missing_connectors(
                    creating stub connectors.
     """
     existing = {c.designator for c in connectors}
-    overrides = connector_overrides or {}
+    overrides: dict[str, dict[str, Any]] = connector_overrides or {}
 
     # Collect unique pins per designator from connections
     pin_sets: dict[str, set[str]] = {}
@@ -250,7 +250,7 @@ def fill_missing_connectors(
         pin_sets.setdefault(conn.from_designator, set()).add(conn.from_pin)
         pin_sets.setdefault(conn.to_designator, set()).add(conn.to_pin)
 
-    missing = sorted(pin_sets.keys() - existing, key=_natural_sort_key)
+    missing: list[str] = sorted(pin_sets.keys() - existing, key=lambda s: _natural_sort_key(s))
     result: list[Connector] = []
     for d in missing:
         ovr = overrides.get(d, {})
