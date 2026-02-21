@@ -25,20 +25,22 @@ Example:
 """
 
 import sqlite3
-from typing import List, Dict, Any
-from .models import NetRow, DesignatorRow, ConnectorRow, CableRow
+from typing import Any
+
 from .exceptions import DatabaseError
+from .models import CableRow, ConnectorRow, DesignatorRow, NetRow
+
 
 class SqliteDataSource:
     """
     Repository for SQLite database access.
-    
+
     Provides methods to load data from the electrical design database.
     All methods return domain objects (dataclasses) rather than raw SQL results.
-    
+
     Attributes:
         db_filepath: Path to the SQLite database file.
-        
+
     Example:
         >>> db = SqliteDataSource("data/master.db")
         >>> if db.check_cable_existence("W001"):
@@ -48,10 +50,10 @@ class SqliteDataSource:
     def __init__(self, db_filepath: str):
         self.db_filepath = db_filepath
 
-    def _fetch_dict_rows(self, query: str) -> List[Dict[str, Any]]:
+    def _fetch_dict_rows(self, query: str) -> list[dict[str, Any]]:
         """
         Internal: Executes a raw SQL query and returns results as dictionaries.
-        
+
         Raises:
             DatabaseError: If database connection fails or query errors.
         """
@@ -76,13 +78,13 @@ class SqliteDataSource:
     def check_cable_existence(self, cable_des: str) -> bool:
         """
         Checks if a cable exists in the database.
-        
+
         Useful for validating cable filters before generating YAML,
         avoiding errors from attempting to process non-existent cables.
-        
+
         Args:
             cable_des: Cable designator to check (e.g., "W001").
-            
+
         Returns:
             True if the cable has at least one connection in NetTable.
         """
@@ -99,20 +101,20 @@ class SqliteDataSource:
 
     # --- Domain Loaders ---
 
-    def load_net_table(self, cable_des_filter: str = "") -> List[NetRow]:
+    def load_net_table(self, cable_des_filter: str = "") -> list[NetRow]:
         """
         Loads connection data from NetTable.
-        
+
         Retrieves point-to-point electrical connections. Each row represents
         a single wire connection between two pins via a specific cable.
-        
+
         Args:
             cable_des_filter: Optional cable designator to filter results.
                             If empty, returns all connections in the database.
-                            
+
         Returns:
             List of NetRow domain objects representing connections.
-            
+
         Example:
             >>> nets = source.load_net_table("W001")
             >>> for net in nets:
@@ -120,77 +122,76 @@ class SqliteDataSource:
         """
         where = f"cable_des = '{cable_des_filter}'" if cable_des_filter else ""
         rows = self._fetch_dict_rows(self._build_query("NetTable", where))
-        
+
         return [
             NetRow(
-                cable_des=row.get('cable_des'),
-                comp_des_1=row.get('comp_des_1'),
-                conn_des_1=row.get('conn_des_1'),
-                pin_1=row.get('pin_1'),
-                comp_des_2=row.get('comp_des_2'),
-                conn_des_2=row.get('conn_des_2'),
-                pin_2=row.get('pin_2'),
-                net_name=row.get('net_name')
-            ) for row in rows
+                cable_des=row["cable_des"],
+                comp_des_1=row["comp_des_1"],
+                conn_des_1=row["conn_des_1"],
+                pin_1=row["pin_1"],
+                comp_des_2=row["comp_des_2"],
+                conn_des_2=row["conn_des_2"],
+                pin_2=row["pin_2"],
+                net_name=row["net_name"],
+            )
+            for row in rows
         ]
 
-    def load_designator_table(self) -> List[DesignatorRow]:
+    def load_designator_table(self) -> list[DesignatorRow]:
         """
         Loads the component-to-connector mapping table.
-        
+
         Maps component designators to their physical connector part numbers.
         Essential for enriching connectors with catalog metadata.
-        
+
         Returns:
             List of DesignatorRow objects with comp_des, conn_des, conn_mpn.
         """
         rows = self._fetch_dict_rows(self._build_query("DesignatorTable"))
         return [
-            DesignatorRow(
-                comp_des=row.get('comp_des'),
-                conn_des=row.get('conn_des'),
-                conn_mpn=row.get('conn_mpn')
-            ) for row in rows
+            DesignatorRow(comp_des=row["comp_des"], conn_des=row["conn_des"], conn_mpn=row["conn_mpn"]) for row in rows
         ]
 
-    def load_connector_table(self) -> List[ConnectorRow]:
+    def load_connector_table(self) -> list[ConnectorRow]:
         """
         Loads the connector catalog with part numbers and specifications.
-        
+
         Contains manufacturer part numbers, pin counts, descriptions,
         and other metadata for all connectors used in the design.
-        
+
         Returns:
             List of ConnectorRow objects with mpn, pincount, description, etc.
         """
         rows = self._fetch_dict_rows(self._build_query("ConnectorTable"))
         return [
             ConnectorRow(
-                mpn=row.get('mpn'),
-                pincount=row.get('pincount'),
-                mate_mpn=row.get('mate_mpn'),
-                pin_mpn=row.get('pin_mpn'),
-                description=row.get('description', ''),
-                manufacturer=row.get('manufacturer', '')
-            ) for row in rows
+                mpn=row["mpn"],
+                pincount=row["pincount"],
+                mate_mpn=row["mate_mpn"],
+                pin_mpn=row["pin_mpn"],
+                description=row.get("description", ""),
+                manufacturer=row.get("manufacturer", ""),
+            )
+            for row in rows
         ]
 
-    def load_cable_table(self) -> List[CableRow]:
+    def load_cable_table(self) -> list[CableRow]:
         """
         Loads cable physical properties (gauge, length, notes).
-        
+
         Contains the physical characteristics of cables such as wire gauge,
         length, and construction notes.
-        
+
         Returns:
             List of CableRow objects with cable_des, wire_gauge, length, note.
         """
         rows = self._fetch_dict_rows(self._build_query("CableTable"))
         return [
             CableRow(
-                cable_des=row.get('cable_des'),
-                wire_gauge=row.get('wire_gauge'),
-                length=row.get('length'),
-                note=row.get('note')
-            ) for row in rows
+                cable_des=row["cable_des"],
+                wire_gauge=row["wire_gauge"],
+                length=row["length"],
+                note=row["note"],
+            )
+            for row in rows
         ]

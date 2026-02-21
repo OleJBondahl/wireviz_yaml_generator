@@ -2,7 +2,6 @@
 
 import pytest
 import yaml
-
 from wireviz_yaml_generator.csv_data_source import CsvDataSource
 from wireviz_yaml_generator.exceptions import DataSourceError
 from wireviz_yaml_generator.workflow_manager import WorkflowManager

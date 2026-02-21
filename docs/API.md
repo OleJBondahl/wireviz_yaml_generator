@@ -1,18 +1,298 @@
 # WireViz YAML Generator — API Reference
 
-This document describes the data models, database schema, and public functions that make up the library's API. Fields are marked **required** or **optional** (with defaults shown).
+## Project API (Recommended)
+
+The `Project` class is the primary way to use this library. It orchestrates the entire pipeline from data source to finished PDF document in a single call.
+
+### Installation
+
+```bash
+# Core library (YAML + SVG + BOM/Labels)
+pip install wireviz-yaml-generator
+
+# With PDF generation support
+pip install wireviz-yaml-generator[pdf]
+```
+
+PDF generation requires the `typst` Python package, installed automatically with the `[pdf]` extra.
+
+### Quick Start
+
+```python
+from wireviz_yaml_generator import Project
+
+project = Project(
+    title="Juicebox Cabinet Harness Documentation",
+    version="02",
+    date="19/01/2026",
+    logo="src/ZENLogo.png",
+    db="data/master.db",
+    cable_start=1,
+    cable_end=44,
+    skip_cables=[10, 21, 32, 43],
+    yaml_dir="drawings/src",
+    drawings_dir="drawings/harness",
+    attachments_dir="attachments",
+    resources_dir="drawings/resources",
+)
+
+# Add document pages (optional — only needed for PDF output)
+project.front_page("docs/front.md")
+project.content_page("docs/description.md")
+
+# Build everything
+project.build(
+    pdf_path="output/harness_doc.pdf",
+    create_bom=True,
+    create_labels=True,
+)
+```
+
+This single script will:
+
+1. Read your electrical design data from the SQLite database
+2. Generate WireViz YAML files for each cable
+3. Invoke WireViz CLI to produce SVG diagrams
+4. Generate BOM and label Excel files
+5. Compile everything into a PDF document with title page, table of contents, content sections, and wiring diagrams
+
+### Constructor Parameters
+
+```python
+Project(
+    *,
+    # Project metadata
+    title: str,                        # Document title (appears in header and title page)
+    version: str = "01",               # Version string (appears in header)
+    date: str = "",                    # Date string (appears in header)
+    logo: str | None = None,           # Path to logo image (appears in header, 3cm wide)
+    font: str = "Times New Roman",     # Document font family
+    proprietary_notice: str | None = None,  # Notice text for bottom of title page
+
+    # Data source — exactly one of db= or csv= is required
+    db: str | None = None,             # Path to SQLite database
+    csv: str | None = None,            # Path to CSV file (alternative to SQLite)
+    auto_generate_cable_des: bool = False,  # CSV only: auto-assign cable designators
+
+    # Cable selection
+    cable_start: int = 0,              # First cable number to process
+    cable_end: int = 50,               # Last cable number to process (inclusive)
+    skip_cables: list[int] | None = None,  # Cable numbers to skip
+
+    # Output directories (created automatically if they don't exist)
+    yaml_dir: str = "drawings/src",           # Where YAML files are written
+    drawings_dir: str = "drawings/harness",   # Where SVG diagrams are written
+    attachments_dir: str = "attachments",     # Where BOM/Labels Excel files are written
+    resources_dir: str = "drawings/resources", # Where connector images are found
+)
+```
+
+Raises `ConfigurationError` if both `db` and `csv` are specified, or if neither is specified.
+
+### Methods
+
+#### `project.front_page(md_path: str) -> None`
+
+Set the Markdown file used for the title page. The content is rendered centered on the page below the document title. Typically contains a revision table. A proprietary notice (if set via the constructor) is placed at the bottom of the page.
+
+```python
+project.front_page("docs/front.md")
+```
+
+Example `front.md`:
+
+```markdown
+## Revision Table
+|Version|Date|Description|Created By|Approved By|
+|-------|----|-----------|----------|-----------|
+|01|02/12/2025|Initial version|Author|Reviewer|
+|02|19/01/2026|Fixed net names|Author|Reviewer|
+```
+
+#### `project.content_page(md_path: str) -> None`
+
+Add a content section from a Markdown file. Can be called multiple times — pages appear in the PDF in the order they are added.
+
+```python
+project.content_page("docs/description.md")
+project.content_page("docs/production_notes.md")
+```
+
+Supported Markdown syntax in content pages:
+
+| Syntax | Typst Output |
+|---|---|
+| `# Heading` | `= Heading` |
+| `## Heading` | `== Heading` |
+| `### Heading` | `=== Heading` |
+| `**bold**` | `*bold*` |
+| `* item` or `- item` | `- item` (bullet list) |
+| `![alt](path)` | `#image("path", width: 100%)` |
+| `![alt](path){width=50%}` | `#image("path", width: 50%)` |
+| `\|col1\|col2\|` | Typst `#table(...)` |
+| Plain paragraph | Text + `#parbreak()` |
+
+#### `project.build(pdf_path=None, create_bom=True, create_labels=True) -> None`
+
+Run the full pipeline. Each parameter controls what gets generated:
+
+| Parameter | Default | Effect |
+|---|---|---|
+| `pdf_path` | `None` | If set, compiles a PDF to this path. Requires `wireviz-yaml-generator[pdf]`. |
+| `create_bom` | `True` | Generate `BOM.xlsx` in `attachments_dir` |
+| `create_labels` | `True` | Generate `Cablelabels.xlsx` and `WireLabels.xlsx` in `attachments_dir` |
+
+YAML files and SVG diagrams are always generated. If the `wireviz` CLI is not found on PATH, YAML files are still created but SVG generation is skipped.
+
+### Pipeline Overview
+
+```
+project.build()
+│
+├─ 1. Create data source (SqliteDataSource or CsvDataSource)
+├─ 2. Build cable filter list: W001, W002, ... (honoring start/end/skip)
+├─ 3. Scan resources_dir for connector images (*.png)
+├─ 4. Run attachment workflow → BOM.xlsx, Cablelabels.xlsx, WireLabels.xlsx
+├─ 5. For each cable:
+│     ├─ Skip if cable doesn't exist in data source
+│     ├─ Generate YAML file
+│     └─ Invoke wireviz CLI → SVG file
+└─ 6. If pdf_path is set:
+      ├─ Add title page (with front_page markdown + proprietary notice)
+      ├─ Add table of contents
+      ├─ Add content pages (all registered markdown files)
+      ├─ Add diagram pages (all generated SVGs)
+      └─ Compile to PDF via Typst
+```
+
+### Examples
+
+#### Minimal: YAML + SVG only (no PDF)
+
+```python
+from wireviz_yaml_generator import Project
+
+project = Project(title="My Harness", db="data/master.db", cable_start=1, cable_end=5)
+project.build()  # YAML + SVG + BOM + Labels, no PDF
+```
+
+#### CSV input with auto-generated cable designators
+
+```python
+from wireviz_yaml_generator import Project
+
+project = Project(
+    title="Simple Harness",
+    csv="data/connections.csv",
+    auto_generate_cable_des=True,
+    cable_start=1,
+    cable_end=10,
+)
+project.build(create_bom=False, create_labels=False)  # YAML + SVG only
+```
+
+#### Full PDF document
+
+```python
+from wireviz_yaml_generator import Project
+
+project = Project(
+    title="Production Harness Documentation",
+    version="03",
+    date="21/02/2026",
+    logo="assets/company_logo.png",
+    proprietary_notice="CONFIDENTIAL - Property of ACME Corp.",
+    db="data/master.db",
+    cable_start=1,
+    cable_end=44,
+    skip_cables=[10, 21, 32, 43],
+)
+
+project.front_page("docs/front.md")
+project.content_page("docs/description.md")
+
+project.build(pdf_path="output/harness_documentation.pdf")
+```
+
+#### YAML generation only (no wireviz, no PDF)
+
+If the `wireviz` CLI is not installed, `build()` still generates YAML files:
+
+```python
+project = Project(title="YAML Only", db="data/master.db", cable_start=1, cable_end=5)
+project.build(pdf_path=None, create_bom=False, create_labels=False)
+# Result: drawings/src/W001.yaml, W002.yaml, ... (no SVG, no Excel, no PDF)
+```
 
 ---
 
-## Data Sources (Input)
+## PDF Rendering API (Advanced)
 
-The library supports two input formats: **SQLite database** (original) and **CSV file** (simpler alternative). Both produce the same domain models and can be used interchangeably via `DataSourceProtocol`.
+For direct control over PDF composition without the `Project` pipeline, use `HarnessDocCompiler` directly.
+
+### HarnessDocConfig
+
+```python
+from wireviz_yaml_generator.rendering.typst import HarnessDocConfig
+
+config = HarnessDocConfig(
+    title="Document Title",      # Header title
+    version="01",                # Header version
+    date="",                     # Header date
+    logo_path=None,              # Path to logo image (or None)
+    font_family="Times New Roman",
+    proprietary_notice=None,     # Notice text for title page
+    root_dir=".",                # Typst root directory for path resolution
+    temp_dir="temp",             # Temp directory for Typst compilation
+)
+```
+
+### HarnessDocCompiler
+
+```python
+from wireviz_yaml_generator.rendering.typst import HarnessDocCompiler, HarnessDocConfig
+
+config = HarnessDocConfig(title="My Harness", version="02", date="21/02/2026")
+compiler = HarnessDocCompiler(config)
+
+# Add pages in order
+compiler.add_title_page("docs/front.md")     # Title page from markdown (optional)
+compiler.add_toc(columns=2, depth=3)          # Table of contents
+compiler.add_content_page("docs/desc.md")     # Content from markdown
+compiler.add_diagram_page("W001", "drawings/harness/W001.svg")  # Wiring diagram
+compiler.add_custom_page("#text[Raw Typst content here]")        # Raw Typst
+
+# Compile to PDF (requires typst package)
+compiler.compile("output/document.pdf")
+
+# Or inspect the generated Typst source without compiling
+typst_source = compiler.build_typst_string()
+print(typst_source)
+```
+
+#### Methods
+
+| Method | Description |
+|---|---|
+| `add_title_page(md_path=None)` | Centered title + optional markdown content + proprietary notice |
+| `add_toc(columns=2, depth=3)` | Auto-generated table of contents |
+| `add_content_page(md_path, image_root=None)` | Normal-flow content from markdown |
+| `add_diagram_page(title, svg_path)` | Wiring diagram with cable title and SVG image |
+| `add_custom_page(typst_content)` | Raw Typst markup |
+| `compile(output_path)` | Compile to PDF (raises `ImportError` if `typst` not installed) |
+| `build_typst_string()` | Return the full Typst source as a string (for debugging) |
+
+---
+
+## Data Sources
+
+The library supports two input formats: **SQLite database** (original) and **CSV file** (simpler alternative). Both produce the same domain models and can be used interchangeably.
 
 ### SQLite Database
 
 The library reads from a SQLite database with four tables. All columns are required unless noted.
 
-### NetTable
+#### NetTable
 
 Each row represents one wire connection between two pins via a cable.
 
@@ -27,7 +307,7 @@ Each row represents one wire connection between two pins via a cable.
 | `pin_2` | `TEXT` | Pin number — side 2 |
 | `net_name` | `TEXT` | Electrical signal name (e.g., `"+24V"`, `"gnd"`, `"SignalA"`) |
 
-### DesignatorTable
+#### DesignatorTable
 
 Maps each component/connector pair to a connector part number.
 
@@ -37,7 +317,7 @@ Maps each component/connector pair to a connector part number.
 | `conn_des` | `TEXT` | Connector designator (empty string if none) |
 | `conn_mpn` | `TEXT` | Connector manufacturer part number — used to look up metadata in ConnectorTable |
 
-### ConnectorTable
+#### ConnectorTable
 
 Catalog of connector specifications. Keyed by `mpn`.
 
@@ -50,7 +330,7 @@ Catalog of connector specifications. Keyed by `mpn`.
 | `description` | `TEXT` | optional | `""` | Part description |
 | `manufacturer` | `TEXT` | optional | `""` | Manufacturer name |
 
-### CableTable
+#### CableTable
 
 Physical properties for each cable.
 
@@ -113,28 +393,11 @@ A single denormalized CSV file where each row represents one wire connection wit
 - `load_connector_table()` creates one `ConnectorRow` per unique MPN (requires `pincount`, `mate_mpn`, and `pin_mpn` all present).
 - `load_cable_table()` creates one `CableRow` per unique `cable_des` (requires both `wire_gauge` and `length`).
 
-**Usage:**
-
-```python
-from csv_data_source import CsvDataSource
-from workflow_manager import WorkflowManager
-
-# Explicit cable designators
-ds = CsvDataSource("path/to/input.csv")
-wm = WorkflowManager(ds)
-wm.run_yaml_workflow("W001", "output/W001.yaml", available_images=set())
-
-# Auto-generate cable designators for rows with empty cable_des
-ds = CsvDataSource("path/to/input.csv", auto_generate_cable_des=True)
-```
-
-See `examples/example_input.csv` for a sample file.
-
 ---
 
 ## Domain Models
 
-All models are frozen (immutable) dataclasses defined in `src/models.py`.
+All models are frozen (immutable) dataclasses defined in `models.py`.
 
 ### Connector
 
@@ -209,170 +472,33 @@ Physical properties of a single wire strand.
 
 ---
 
-## Raw Database Row Models
+## Low-Level API Reference
 
-These mirror the SQLite tables exactly and are the input to all transformation functions.
+These are the building blocks used internally by `Project`. Use them directly when you need fine-grained control over individual pipeline steps.
 
-### NetRow
+### Data Access
 
-All fields **required**: `cable_des`, `comp_des_1`, `conn_des_1`, `pin_1`, `comp_des_2`, `conn_des_2`, `pin_2`, `net_name` — all `str`.
-
-### DesignatorRow
-
-All fields **required**: `comp_des`, `conn_des`, `conn_mpn` — all `str`.
-
-### ConnectorRow
-
-| Field | Type | Required | Default |
-|---|---|---|---|
-| `mpn` | `str` | **required** | — |
-| `pincount` | `int` | **required** | — |
-| `mate_mpn` | `str` | **required** | — |
-| `pin_mpn` | `str` | **required** | — |
-| `description` | `str` | optional | `""` |
-| `manufacturer` | `str` | optional | `""` |
-
-### CableRow
-
-All fields **required**: `cable_des` (`str`), `wire_gauge` (`float`), `length` (`float`), `note` (`str`).
-
----
-
-## Public Functions
-
-### Transformation Layer (`src/transformations.py`)
-
-All functions are **pure** — no I/O, no side effects.
-
-#### `process_connectors`
+#### `SqliteDataSource`
 
 ```python
-process_connectors(
-    net_rows: list[NetRow],
-    designator_rows: list[DesignatorRow],
-    connector_rows: list[ConnectorRow],
-    available_images: set[str],   # e.g. {"MATE-123.png"}
-    filter_active: bool,
-) -> list[Connector]
+from wireviz_yaml_generator import SqliteDataSource
+
+source = SqliteDataSource("data/master.db")
+nets = source.load_net_table("W001")      # Filtered by cable
+connectors = source.load_connector_table() # Full catalog
+exists = source.check_cable_existence("W001")
 ```
 
-Transforms raw rows into enriched `Connector` objects. When `filter_active=True`, only connectors referenced in `net_rows` are returned.
-
-**Business rules:**
-- Designator format: `"{comp_des}-{conn_des}"` if `conn_des` is non-empty, else `"{comp_des}"`
-- Wire Ferrule: if `pin_mpn` contains `"Wire Ferrule"` → `notes="Terminate Wires in Wire Ferrule"`, `hide_disconnected=True`, `show_pincount=False`, `mpn=None`
-- Image: if `"{mate_mpn}.png"` is in `available_images` → `image_src="../resources/{mate_mpn}.png"`
-- MPN not found: `mpn="NotFound"`, `hide_disconnected=True`
-
-#### `process_cables`
+#### `CsvDataSource`
 
 ```python
-process_cables(
-    net_rows: list[NetRow],
-    cable_rows: list[CableRow],
-) -> list[Cable]
+from wireviz_yaml_generator import CsvDataSource
+
+source = CsvDataSource("data/input.csv")
+source = CsvDataSource("data/input.csv", auto_generate_cable_des=True)
 ```
 
-Aggregates wires into `Cable` objects. Looks up gauge/notes from `cable_rows`.
-
-**Critical invariant:** Sorts by `(cable_des, comp_des_1, conn_des_1, pin_1)` — the same key used by `process_connections()`. This ensures `wire_labels[i]` corresponds to `via_pin = i+1`.
-
-#### `process_connections`
-
-```python
-process_connections(net_rows: list[NetRow]) -> list[Connection]
-```
-
-Maps net rows to `Connection` objects with auto-assigned `via_pin` (1-indexed per cable).
-
-**Critical invariant:** Uses the same sort key as `process_cables()`.
-
-#### `generate_bom_data`
-
-```python
-generate_bom_data(
-    net_rows: list[NetRow],
-    designator_rows: list[DesignatorRow],
-    connector_rows: list[ConnectorRow],
-    cable_rows: list[CableRow],
-) -> list[dict[str, Any]]
-```
-
-Returns BOM as list-of-dicts with keys: `mpn`, `description`, `manufacturer`, `quantity`, `unit`.
-
-**Business rules:**
-- Connector quantity: count of active designators per `conn_mpn`, outputs `mate_mpn`
-- Wire color: `"Red"` if `"24V"` in net_name, `"Black"` if `"gnd"` in net_name, `"White"` otherwise (case-sensitive)
-- Wire quantity: `(length_mm × wire_count) / 1000` → meters
-- Wire MPN format: `"{wire_gauge}mm2-{color}"`
-
-#### `generate_cable_labels`
-
-```python
-generate_cable_labels(net_rows: list[NetRow]) -> list[dict[str, str]]
-```
-
-Returns `[{"Label": ...}, ...]`. First entry is `"Cable Labels:"` header. Labels are deduplicated per cable. Format: `"{comp_des}-{conn_des} : {cable_des}"`.
-
-#### `generate_wire_labels`
-
-```python
-generate_wire_labels(net_rows: list[NetRow]) -> list[dict[str, str]]
-```
-
-Returns `[{"Label": ...}, ...]`. First entry is `"Wire Labels:"` header. Grouped by cable with `"Labels: {cable_des}"` sub-headers. Each wire produces two lines (one per side).
-
-### YAML Output Layer (`src/BuildYaml.py`)
-
-#### `connector_to_dict`
-
-```python
-connector_to_dict(c: Connector) -> dict[str, Any]
-```
-
-Converts to WireViz dict. `show_pincount` only appears when `False`. `hide_disconnected_pins` only appears when `True`. Image included as nested dict with `height=50`.
-
-#### `cable_to_dict`
-
-```python
-cable_to_dict(c: Cable) -> dict[str, Any]
-```
-
-Converts to WireViz dict. Key mapping: `wire_count` → `"wirecount"`, `wire_labels` → `"wirelabels"`.
-
-#### `connection_to_list`
-
-```python
-connection_to_list(c: Connection) -> list[dict[str, Any]]
-```
-
-Returns 3-element list: `[{from_designator: from_pin}, {via_cable: via_pin}, {to_designator: to_pin}]`. Pin values for connectors are `str`, for cables `int`.
-
-#### `build_yaml_file`
-
-```python
-build_yaml_file(
-    connectors: list[Connector],
-    cables: list[Cable],
-    connections: list[Connection],
-    yaml_filepath: str,
-) -> None
-```
-
-Writes a complete WireViz YAML file. Root structure:
-
-```yaml
-connectors:
-  <designator>: {mpn, pincount, ...}
-cables:
-  <designator>: {wirecount, category, ...}
-connections:
-  - [{from: pin}, {cable: pin}, {to: pin}]
-```
-
-### Data Access Layer
-
-#### `DataSourceProtocol` (`src/protocols.py`)
+Both implement `DataSourceProtocol`:
 
 ```python
 class DataSourceProtocol(Protocol):
@@ -383,59 +509,75 @@ class DataSourceProtocol(Protocol):
     def load_cable_table(self) -> list[CableRow]: ...
 ```
 
-Structural interface satisfied by both `SqliteDataSource` and `CsvDataSource`.
+### WorkflowManager
 
-#### `SqliteDataSource` (`src/data_access.py`)
-
-```python
-class SqliteDataSource:
-    def __init__(self, db_filepath: str): ...
-```
-
-Raises `DatabaseError` (subclass of `WireVizError`) on SQLite failures.
-
-#### `CsvDataSource` (`src/csv_data_source.py`)
+Orchestrates data loading, transformation, and output for a given data source.
 
 ```python
-class CsvDataSource:
-    def __init__(self, csv_filepath: str, *, auto_generate_cable_des: bool = False): ...
+from wireviz_yaml_generator import WorkflowManager, SqliteDataSource
+
+source = SqliteDataSource("data/master.db")
+workflow = WorkflowManager(source)
+
+# Generate YAML for a single cable
+workflow.run_yaml_workflow("W001", "output/W001.yaml", available_images={"connector.png"})
+
+# Generate BOM + Labels for multiple cables
+workflow.run_attachment_workflow(
+    cable_filters=["W001", "W002", "W003"],
+    output_path="attachments/",
+    create_bom=True,
+    create_labels=True,
+)
 ```
 
-When `auto_generate_cable_des=True`, rows with empty `cable_des` are assigned unique designators (`W_AUTO_001`, `W_AUTO_002`, ...). When `False` (default), empty `cable_des` raises `DataSourceError`.
+### Transformation Functions
 
-Raises `DataSourceError` (subclass of `WireVizError`) on missing file, empty CSV, missing required columns, or empty `cable_des` (when `auto_generate_cable_des=False`).
-
-### Orchestration (`src/workflow_manager.py`)
-
-#### `WorkflowManager`
+All functions in `transformations.py` are **pure** — no I/O, no side effects.
 
 ```python
-class WorkflowManager:
-    def __init__(self, data_source: DataSourceProtocol): ...
-
-    def run_yaml_workflow(
-        self,
-        cable_filter: str,             # single cable designator
-        yaml_filepath: str,            # output path
-        available_images: set[str],    # image filenames in resources/
-    ) -> None: ...
-
-    def run_attachment_workflow(
-        self,
-        cable_filters: list[str],     # cable designators to include
-        output_path: str,             # directory for Excel files
-        create_bom: bool = True,
-        create_labels: bool = True,
-    ) -> None: ...
+from wireviz_yaml_generator.transformations import (
+    process_connectors,
+    process_cables,
+    process_connections,
+    generate_bom_data,
+    generate_cable_labels,
+    generate_wire_labels,
+)
 ```
 
-### Excel Output (`src/excel_writer.py`)
+| Function | Input | Output |
+|---|---|---|
+| `process_connectors(net_rows, designator_rows, connector_rows, available_images, filter_active)` | Raw DB rows + image set | `list[Connector]` |
+| `process_cables(net_rows, cable_rows)` | Raw DB rows | `list[Cable]` |
+| `process_connections(net_rows)` | Raw DB rows | `list[Connection]` |
+| `generate_bom_data(net_rows, designator_rows, connector_rows, cable_rows)` | Raw DB rows | `list[dict]` |
+| `generate_cable_labels(net_rows)` | Net rows | `list[dict]` |
+| `generate_wire_labels(net_rows)` | Net rows | `list[dict]` |
+
+### YAML Output
 
 ```python
-def write_xlsx(data: list[dict[str, Any]], filename: str, output_path: str) -> None
-def add_misc_bom_items(bom_data: list[dict[str, Any]], filename: str, output_path: str) -> list[dict[str, Any]]
+from wireviz_yaml_generator.BuildYaml import build_yaml_file, connector_to_dict, cable_to_dict, connection_to_list
+
+# Write a complete YAML file
+build_yaml_file(connectors, cables, connections, "output/W001.yaml")
+
+# Or convert individual models to dicts
+d = connector_to_dict(connector)
+d = cable_to_dict(cable)
+l = connection_to_list(connection)  # Returns 3-element list
 ```
 
-`write_xlsx` creates `{output_path}/{filename}.xlsx`. Skips creation if `data` is empty.
+### Exceptions
 
-`add_misc_bom_items` reads `{output_path}/{filename}.csv` and appends rows to `bom_data`. Returns original data unchanged if CSV not found.
+```python
+from wireviz_yaml_generator import WireVizError, ConfigurationError, DatabaseError, DataSourceError
+```
+
+| Exception | Raised by | When |
+|---|---|---|
+| `WireVizError` | Base class | — |
+| `ConfigurationError` | `Project`, `ConfigLoader` | Invalid configuration (e.g., both db and csv specified) |
+| `DatabaseError` | `SqliteDataSource` | SQLite connection or query failure |
+| `DataSourceError` | `CsvDataSource` | Missing file, empty CSV, missing columns, empty cable_des |

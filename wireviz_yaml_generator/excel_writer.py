@@ -9,7 +9,7 @@ Design Philosophy:
     - Separation of Concerns: Core logic doesn't know about Excel or pandas
     - Simple Interface: Accepts list-of-dict (universal tabular format)
     - Error Handling: Gracefully handles empty data and missing files
-    
+
 Data Format:
     Functions expect data as: List[Dict[str, Any]]
     Example:
@@ -24,15 +24,17 @@ Example:
     >>> write_xlsx(bom_data, "BOM", "output/")
 """
 
-import pandas as pd
-import os
 import csv
-from typing import List, Dict, Any
+import os
+from typing import Any
 
-def write_xlsx(data: List[Dict[str, Any]], filename: str, output_path: str) -> None:
+import pandas as pd
+
+
+def write_xlsx(data: list[dict[str, Any]], filename: str, output_path: str) -> None:
     """
     Writes a list of dictionaries to an Excel file.
-    
+
     Each dictionary represents a row, and dictionary keys become column headers.
     If the data list is empty, prints a warning and skips file creation.
 
@@ -41,7 +43,7 @@ def write_xlsx(data: List[Dict[str, Any]], filename: str, output_path: str) -> N
               Keys are column names, values are cell values.
         filename: Base name for the output file (without .xlsx extension).
         output_path: Directory path where the file will be written.
-        
+
     Example:
         >>> data = [
         ...     {"Part": "Connector", "Quantity": 5},
@@ -58,18 +60,14 @@ def write_xlsx(data: List[Dict[str, Any]], filename: str, output_path: str) -> N
     df.to_excel(output_file, index=False)
 
 
-def add_misc_bom_items(
-    bom_data: List[Dict[str, Any]], 
-    filename: str, 
-    output_path: str
-) -> List[Dict[str, Any]]:
+def add_misc_bom_items(bom_data: list[dict[str, Any]], filename: str, output_path: str) -> list[dict[str, Any]]:
     """
     Appends miscellaneous BOM items from a CSV file to generated BOM data.
-    
+
     This function allows adding manual BOM entries (screws, cable ties, labels, etc.)
     that aren't auto-generated from the database. The CSV file should have the same
     column structure as the generated BOM (MPN, Description, Quantity, etc.).
-    
+
     If the CSV file doesn't exist, returns the original BOM data unchanged with a warning.
 
     Args:
@@ -79,22 +77,22 @@ def add_misc_bom_items(
 
     Returns:
         Combined list containing both generated and manually-added BOM items.
-        
+
     Example:
         >>> generated_bom = [{"MPN": "CON123", "Quantity": 5}]
         >>> full_bom = add_misc_bom_items(generated_bom, "MiscBOM", "attachments/")
         >>> # Returns original BOM + items from attachments/MiscBOM.csv
     """
     csv_file_path = os.path.join(output_path, f"{filename}.csv")
-    
+
     if not os.path.exists(csv_file_path):
         print(f"⚠️ Warning: Misc BOM file not found at {csv_file_path}")
         return bom_data
 
     misc_data = []
-    with open(csv_file_path, mode='r', encoding='utf-8-sig') as csv_file: # utf-8-sig handles BOM characters
+    with open(csv_file_path, encoding="utf-8-sig") as csv_file:  # utf-8-sig handles BOM characters
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
             misc_data.append(row)
-    
+
     return bom_data + misc_data

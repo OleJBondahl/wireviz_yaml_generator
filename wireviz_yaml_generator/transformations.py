@@ -5,36 +5,34 @@ This module contains **Pure Functions** that transform Domain Models.
 It includes no I/O operations (no database access, no file writing).
 """
 
-from typing import List, Dict, Any, Set, Optional
 import re
+from typing import Any
+
 from .models import (
-    NetRow,
-    DesignatorRow,
-    ConnectorRow,
-    CableRow,
-    Connector,
     Cable,
+    CableRow,
     Connection,
+    Connector,
+    ConnectorRow,
+    DesignatorRow,
+    NetRow,
 )
 
 
-def _natural_sort_key(s: str | None) -> List[Any]:
+def _natural_sort_key(s: str | None) -> list[Any]:
     """Helper for 'human' sorting."""
     if s is None:
         return []
-    return [
-        int(text) if text.isdigit() else text.lower()
-        for text in re.split("([0-9]+)", str(s))
-    ]
+    return [int(text) if text.isdigit() else text.lower() for text in re.split("([0-9]+)", str(s))]
 
 
 def process_connectors(
-    net_rows: List[NetRow],
-    designator_rows: List[DesignatorRow],
-    connector_rows: List[ConnectorRow],
-    available_images: Set[str],
+    net_rows: list[NetRow],
+    designator_rows: list[DesignatorRow],
+    connector_rows: list[ConnectorRow],
+    available_images: set[str],
     filter_active: bool,
-) -> List[Connector]:
+) -> list[Connector]:
     """
     Transforms raw DB rows into Connector domain objects.
 
@@ -47,7 +45,7 @@ def process_connectors(
     """
 
     # 1. Filter Designators if needed
-    required_connectors: Set[str] = set()
+    required_connectors: set[str] = set()
     filtered_designators = designator_rows
 
     if filter_active:
@@ -56,24 +54,18 @@ def process_connectors(
             required_connectors.add(f"{row.comp_des_2}-{row.conn_des_2}")
 
         filtered_designators = [
-            row
-            for row in designator_rows
-            if f"{row.comp_des}-{row.conn_des}" in required_connectors
+            row for row in designator_rows if f"{row.comp_des}-{row.conn_des}" in required_connectors
         ]
 
     # 2. Sort naturally
-    filtered_designators.sort(
-        key=lambda x: (_natural_sort_key(x.comp_des), _natural_sort_key(x.conn_des))
-    )
+    filtered_designators.sort(key=lambda x: (_natural_sort_key(x.comp_des), _natural_sort_key(x.conn_des)))
 
     # 3. Enrich with ConnectorTable data
     connector_map = {c.mpn: c for c in connector_rows}
-    result_data: List[Connector] = []
+    result_data: list[Connector] = []
 
     for row in filtered_designators:
-        name = (
-            f"{row.comp_des}" if not row.conn_des else f"{row.comp_des}-{row.conn_des}"
-        )
+        name = f"{row.comp_des}" if not row.conn_des else f"{row.comp_des}-{row.conn_des}"
 
         # Defaults
         mpn = None
@@ -105,7 +97,8 @@ def process_connectors(
                 image_caption = "ISO view"
         else:
             print(
-                f"⚠️  Warning: MPN '{conn_mpn}' for connector '{name}' not found in ConnectorTable. Using default values."
+                f"⚠️  Warning: MPN '{conn_mpn}' for connector '{name}'"
+                " not found in ConnectorTable. Using default values."
             )
             mpn = "NotFound"
             hide_disconnected = True
@@ -126,16 +119,14 @@ def process_connectors(
     return result_data
 
 
-def process_cables(net_rows: List[NetRow], cable_rows: List[CableRow]) -> List[Cable]:
+def process_cables(net_rows: list[NetRow], cable_rows: list[CableRow]) -> list[Cable]:
     """Aggregates wires into Cables."""
     # CRITICAL: Sort rows in the SAME order as process_connections()
     # This ensures wire_labels[i] corresponds to via_pin = i+1 in connections.
-    sorted_rows = sorted(
-        net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1)
-    )
+    sorted_rows = sorted(net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1))
 
     # 1. Aggregate wires by cable_des (in sorted order)
-    aggregated_wires: Dict[str, List[str]] = {}
+    aggregated_wires: dict[str, list[str]] = {}
     for row in sorted_rows:
         if row.cable_des not in aggregated_wires:
             aggregated_wires[row.cable_des] = []
@@ -144,7 +135,7 @@ def process_cables(net_rows: List[NetRow], cable_rows: List[CableRow]) -> List[C
     # 2. Pre-process Cable Metadata for O(1) lookup
     cable_meta_map = {c.cable_des: c for c in cable_rows}
 
-    cable_data: List[Cable] = []
+    cable_data: list[Cable] = []
 
     for cable_des, wires in aggregated_wires.items():
         gauge = None
@@ -170,15 +161,13 @@ def process_cables(net_rows: List[NetRow], cable_rows: List[CableRow]) -> List[C
     return cable_data
 
 
-def process_connections(net_rows: List[NetRow]) -> List[Connection]:
+def process_connections(net_rows: list[NetRow]) -> list[Connection]:
     """Maps net table rows to Connection objects with Via Pin assignment."""
     # 1. Sort to ensure consistent pinout order (Critical for determinism)
-    sorted_rows = sorted(
-        net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1)
-    )
+    sorted_rows = sorted(net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1))
 
-    connection_data: List[Connection] = []
-    cable_pin_counters: Dict[str, int] = {}
+    connection_data: list[Connection] = []
+    cable_pin_counters: dict[str, int] = {}
 
     for row in sorted_rows:
         via_name = row.cable_des
@@ -189,13 +178,9 @@ def process_connections(net_rows: List[NetRow]) -> List[Connection]:
 
         connection_data.append(
             Connection(
-                from_designator=f"{row.comp_des_1}-{row.conn_des_1}"
-                if row.conn_des_1
-                else f"{row.comp_des_1}",
+                from_designator=f"{row.comp_des_1}-{row.conn_des_1}" if row.conn_des_1 else f"{row.comp_des_1}",
                 from_pin=row.pin_1,
-                to_designator=f"{row.comp_des_2}-{row.conn_des_2}"
-                if row.conn_des_2
-                else f"{row.comp_des_2}",
+                to_designator=f"{row.comp_des_2}-{row.conn_des_2}" if row.conn_des_2 else f"{row.comp_des_2}",
                 to_pin=row.pin_2,
                 via_cable=via_name,
                 via_pin=via_pin,
@@ -207,13 +192,13 @@ def process_connections(net_rows: List[NetRow]) -> List[Connection]:
 
 
 def generate_bom_data(
-    net_rows: List[NetRow],
-    designator_rows: List[DesignatorRow],
-    connector_rows: List[ConnectorRow],
-    cable_rows: List[CableRow],
-) -> List[Dict[str, Any]]:
+    net_rows: list[NetRow],
+    designator_rows: list[DesignatorRow],
+    connector_rows: list[ConnectorRow],
+    cable_rows: list[CableRow],
+) -> list[dict[str, Any]]:
     """Calculates the Bill of Materials (BOM)."""
-    bom_data: List[Dict[str, Any]] = []
+    bom_data: list[dict[str, Any]] = []
 
     # --- Connectors Section ---
     conn_set = set()
@@ -221,7 +206,7 @@ def generate_bom_data(
         conn_set.add(f"{row.comp_des_1}-{row.conn_des_1}")
         conn_set.add(f"{row.comp_des_2}-{row.conn_des_2}")
 
-    part_counter: Dict[str, int] = {}
+    part_counter: dict[str, int] = {}
     for row in designator_rows:
         full_des = f"{row.comp_des}-{row.conn_des}"
         if full_des in conn_set:
@@ -240,7 +225,7 @@ def generate_bom_data(
             )
 
     # --- Wires Section ---
-    wire_counter: Dict[str, int] = {}
+    wire_counter: dict[str, int] = {}
     for row in net_rows:
         key_suffix = "White"
         if "24V" in row.net_name:
@@ -251,7 +236,7 @@ def generate_bom_data(
         key = f"{row.cable_des}{key_suffix}"
         wire_counter[key] = wire_counter.get(key, 0) + 1
 
-    wire_rows: List[Dict[str, Any]] = []
+    wire_rows: list[dict[str, Any]] = []
     DESCRIPTION = "Radox 125"
     MANUFACTURER = ""
     UNIT = "Meter"
@@ -271,8 +256,8 @@ def generate_bom_data(
                 )
 
     # Aggregate by MPN
-    mpn_quantity: Dict[str, float] = {}
-    first_rows: Dict[str, Dict] = {}
+    mpn_quantity: dict[str, float] = {}
+    first_rows: dict[str, dict] = {}
 
     for w in wire_rows:
         mpn_quantity[w["mpn"]] = mpn_quantity.get(w["mpn"], 0) + w["quantity"]
@@ -294,27 +279,19 @@ def generate_bom_data(
     return bom_data
 
 
-def generate_cable_labels(net_rows: List[NetRow]) -> List[Dict[str, str]]:
+def generate_cable_labels(net_rows: list[NetRow]) -> list[dict[str, str]]:
     """Generates cable tags/labels formatted for printing."""
     cable_set = set(r.cable_des for r in net_rows)
-    cable_dict: Dict[str, List[str]] = {c: [] for c in cable_set}
+    cable_dict: dict[str, list[str]] = {c: [] for c in cable_set}
 
     for row in net_rows:
         # Side 1
         c1 = row.conn_des_1
-        label_1 = (
-            f"{row.comp_des_1}-{c1} : {row.cable_des}"
-            if c1
-            else f"{row.comp_des_1} : {row.cable_des}"
-        )
+        label_1 = f"{row.comp_des_1}-{c1} : {row.cable_des}" if c1 else f"{row.comp_des_1} : {row.cable_des}"
 
         # Side 2
         c2 = row.conn_des_2
-        label_2 = (
-            f"{row.comp_des_2}-{c2} : {row.cable_des}"
-            if c2
-            else f"{row.comp_des_2} : {row.cable_des}"
-        )
+        label_2 = f"{row.comp_des_2}-{c2} : {row.cable_des}" if c2 else f"{row.comp_des_2} : {row.cable_des}"
 
         if label_1 not in cable_dict[row.cable_des]:
             cable_dict[row.cable_des].append(label_1)
@@ -322,18 +299,16 @@ def generate_cable_labels(net_rows: List[NetRow]) -> List[Dict[str, str]]:
             cable_dict[row.cable_des].append(label_2)
 
     label_data = ["Cable Labels:"]
-    for cable, label_list in cable_dict.items():
+    for _cable, label_list in cable_dict.items():
         label_data.extend(label_list)
 
-    return [{"Label": l} for l in label_data]
+    return [{"Label": item} for item in label_data]
 
 
-def generate_wire_labels(net_rows: List[NetRow]) -> List[Dict[str, str]]:
+def generate_wire_labels(net_rows: list[NetRow]) -> list[dict[str, str]]:
     """Generates wire end-point labels formatted for printing."""
     # Sort for grouping by cable
-    sorted_rows = sorted(
-        net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1)
-    )
+    sorted_rows = sorted(net_rows, key=lambda x: (x.cable_des, x.comp_des_1, x.conn_des_1, x.pin_1))
 
     wire_data = ["Wire Labels:"]
     previous_cable = None
@@ -352,4 +327,4 @@ def generate_wire_labels(net_rows: List[NetRow]) -> List[Dict[str, str]]:
         d2 = row.conn_des_2 if row.conn_des_2 else row.comp_des_2
         wire_data.append(f"{d2} : {row.pin_2}")
 
-    return [{"Label": l} for l in wire_data]
+    return [{"Label": item} for item in wire_data]

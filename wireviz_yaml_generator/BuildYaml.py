@@ -9,16 +9,19 @@ expects for generation.
 It uses Pure Functions for conversion to ensure testability.
 """
 
+from typing import Any
+
 import yaml
-from typing import List, Dict, Any, Optional
-from .models import Connector, Cable, Connection
+
+from .models import Cable, Connection, Connector
 
 # --- Pure Conversion Functions ---
 
-def _clean_dict(d: Dict[str, Any]) -> Dict[str, Any]:
+
+def _clean_dict(d: dict[str, Any]) -> dict[str, Any]:
     """
     Recursively removes None values and empty containers from a dictionary.
-    
+
     This results in a cleaner YAML file (omitting fields that aren't set),
     which is preferred by WireViz.
     """
@@ -35,7 +38,8 @@ def _clean_dict(d: Dict[str, Any]) -> Dict[str, Any]:
             cleaned[k] = v
     return cleaned
 
-def connector_to_dict(c: Connector) -> Dict[str, Any]:
+
+def connector_to_dict(c: Connector) -> dict[str, Any]:
     """
     Converts a Connector domain object to a WireViz dictionary structure.
 
@@ -49,21 +53,18 @@ def connector_to_dict(c: Connector) -> Dict[str, Any]:
         "mpn": c.mpn,
         "pincount": c.pincount,
         # Only include flags if they deviate from default to reduce noise
-        "show_pincount": c.show_pincount if not c.show_pincount else None, 
+        "show_pincount": c.show_pincount if not c.show_pincount else None,
         "hide_disconnected_pins": c.hide_disconnected_pins if c.hide_disconnected_pins else None,
         "notes": c.notes,
     }
-    
+
     if c.image_src:
-        d["image"] = {
-            "src": c.image_src,
-            "caption": c.image_caption,
-            "height": 50 
-        }
-    
+        d["image"] = {"src": c.image_src, "caption": c.image_caption, "height": 50}
+
     return _clean_dict(d)
 
-def cable_to_dict(c: Cable) -> Dict[str, Any]:
+
+def cable_to_dict(c: Cable) -> dict[str, Any]:
     """
     Converts a Cable domain object to a WireViz dictionary structure.
 
@@ -79,11 +80,12 @@ def cable_to_dict(c: Cable) -> Dict[str, Any]:
         "gauge": c.gauge,
         "gauge_unit": c.gauge_unit,
         "notes": c.notes,
-        "wirelabels": c.wire_labels
+        "wirelabels": c.wire_labels,
     }
     return _clean_dict(d)
 
-def connection_to_list(c: Connection) -> List[Dict[str, Any]]:
+
+def connection_to_list(c: Connection) -> list[dict[str, Any]]:
     """
     Converts a Connection domain object to a WireViz connection list.
 
@@ -98,17 +100,15 @@ def connection_to_list(c: Connection) -> List[Dict[str, Any]]:
     from_node = {c.from_designator: c.from_pin}
     via_node = {c.via_cable: c.via_pin}
     to_node = {c.to_designator: c.to_pin}
-    
+
     return [from_node, via_node, to_node]
 
 
 # --- Main Builder ---
 
+
 def build_yaml_file(
-    connectors: List[Connector],
-    cables: List[Cable],
-    connections: List[Connection],
-    yaml_filepath: str
+    connectors: list[Connector], cables: list[Cable], connections: list[Connection], yaml_filepath: str
 ) -> None:
     """
     Orchestrates the creation of the final YAML file.
@@ -124,31 +124,22 @@ def build_yaml_file(
         connections: List of Connection objects.
         yaml_filepath: Destination path string.
     """
-    
+
     # 1. Convert to Dicts
-    formatted_connectors = {
-        c.designator: connector_to_dict(c) 
-        for c in connectors
-    }
-    
-    formatted_cables = {
-        c.designator: cable_to_dict(c)
-        for c in cables
-    }
-    
-    formatted_connections = [
-        connection_to_list(c)
-        for c in connections
-    ]
+    formatted_connectors = {c.designator: connector_to_dict(c) for c in connectors}
+
+    formatted_cables = {c.designator: cable_to_dict(c) for c in cables}
+
+    formatted_connections = [connection_to_list(c) for c in connections]
 
     # 2. Assemble Final Structure
     final_data = {}
     if formatted_connectors:
-        final_data['connectors'] = formatted_connectors
+        final_data["connectors"] = formatted_connectors
     if formatted_cables:
-        final_data['cables'] = formatted_cables
+        final_data["cables"] = formatted_cables
     if formatted_connections:
-        final_data['connections'] = formatted_connections
+        final_data["connections"] = formatted_connections
 
     # 3. Write Output
     with open(yaml_filepath, "w", encoding="utf-8") as f:

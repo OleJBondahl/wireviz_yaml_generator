@@ -9,27 +9,26 @@ __version__ = "0.1.0"
 __author__ = "Ole Johan Bondahl"
 __license__ = "MIT"
 
-from .models import (
-    Connector,
-    Cable,
-    Connection,
-    BomItem,
-    Wire,
-    NetRow,
-    DesignatorRow,
-    ConnectorRow,
-    CableRow,
-)
-
+from .csv_data_source import CsvDataSource
 from .exceptions import (
-    WireVizError,
     ConfigurationError,
     DatabaseError,
     DataSourceError,
+    WireVizError,
 )
-
+from .models import (
+    BomItem,
+    Cable,
+    CableRow,
+    Connection,
+    Connector,
+    ConnectorRow,
+    DesignatorRow,
+    NetRow,
+    Wire,
+)
+from .project import Project
 from .protocols import DataSourceProtocol
-from .csv_data_source import CsvDataSource
 from .workflow_manager import WorkflowManager
 
 __all__ = [
@@ -49,4 +48,5 @@ __all__ = [
     "DataSourceProtocol",
     "CsvDataSource",
     "WorkflowManager",
+    "Project",
 ]

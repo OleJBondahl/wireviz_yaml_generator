@@ -1,11 +1,12 @@
 """Unit Tests for WorkflowManager orchestration."""
 
 import os
-import yaml
 from unittest.mock import MagicMock
 
-from conftest import make_net_row, make_designator_row, make_connector_row, make_cable_row
+import yaml
 from wireviz_yaml_generator.workflow_manager import WorkflowManager
+
+from conftest import make_cable_row, make_connector_row, make_designator_row, make_net_row
 
 
 def _build_mock_source(net_rows, designator_rows, connector_rows, cable_rows):
@@ -21,8 +22,16 @@ def _build_mock_source(net_rows, designator_rows, connector_rows, cable_rows):
 def test_run_yaml_workflow_creates_valid_yaml(tmp_path):
     """run_yaml_workflow produces a valid WireViz YAML file."""
     net_rows = [
-        make_net_row(cable_des="W001", comp_des_1="J1", conn_des_1="X1", pin_1="1",
-                     comp_des_2="J2", conn_des_2="", pin_2="1", net_name="Sig1"),
+        make_net_row(
+            cable_des="W001",
+            comp_des_1="J1",
+            conn_des_1="X1",
+            pin_1="1",
+            comp_des_2="J2",
+            conn_des_2="",
+            pin_2="1",
+            net_name="Sig1",
+        ),
     ]
     designator_rows = [
         make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-A"),
@@ -72,8 +81,9 @@ def test_run_yaml_workflow_calls_data_source(tmp_path):
 def test_run_attachment_workflow_creates_bom_file(tmp_path):
     """run_attachment_workflow creates BOM.xlsx when create_bom=True."""
     net_rows = [
-        make_net_row(cable_des="W001", comp_des_1="J1", conn_des_1="X1",
-                     comp_des_2="J2", conn_des_2="", net_name="+24V"),
+        make_net_row(
+            cable_des="W001", comp_des_1="J1", conn_des_1="X1", comp_des_2="J2", conn_des_2="", net_name="+24V"
+        ),
     ]
     designator_rows = [
         make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-A"),
@@ -130,6 +140,7 @@ def test_run_attachment_workflow_filters_cables(tmp_path):
     wm.run_attachment_workflow(["W001"], output, create_bom=False, create_labels=True)
 
     import openpyxl
+
     wb = openpyxl.load_workbook(os.path.join(output, "WireLabels.xlsx"))
     ws = wb.active
     all_text = " ".join(str(cell.value) for row in ws.iter_rows() for cell in row if cell.value)

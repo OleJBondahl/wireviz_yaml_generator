@@ -1,9 +1,15 @@
 """Unit Tests for BuildYaml Module."""
 
-import pytest
 import yaml
-from wireviz_yaml_generator.models import Connector, Cable, Connection
-from wireviz_yaml_generator.BuildYaml import connector_to_dict, cable_to_dict, connection_to_list, _clean_dict, build_yaml_file
+from wireviz_yaml_generator.BuildYaml import (
+    _clean_dict,
+    build_yaml_file,
+    cable_to_dict,
+    connection_to_list,
+    connector_to_dict,
+)
+from wireviz_yaml_generator.models import Cable, Connection, Connector
+
 
 def test_clean_dict():
     """Test that None values and empty containers are removed from dictionaries."""
@@ -11,6 +17,7 @@ def test_clean_dict():
     cleaned = _clean_dict(dirty)
     expected = {"a": 1, "e": {"g": 2}}
     assert cleaned == expected
+
 
 def test_connector_to_dict():
     """Test conversion of Connector domain object to WireViz dictionary format."""
@@ -22,53 +29,45 @@ def test_connector_to_dict():
         hide_disconnected_pins=False,
         notes="Test Note",
         image_src="../img.png",
-        image_caption="Image"
+        image_caption="Image",
     )
     d = connector_to_dict(c)
-    
-    assert d['mpn'] == "ABC"
-    assert d['pincount'] == 10
-    assert 'show_pincount' not in d
-    
-    assert d['notes'] == "Test Note"
-    assert d['image']['src'] == "../img.png"
+
+    assert d["mpn"] == "ABC"
+    assert d["pincount"] == 10
+    assert "show_pincount" not in d
+
+    assert d["notes"] == "Test Note"
+    assert d["image"]["src"] == "../img.png"
+
 
 def test_cable_to_dict():
     """Test conversion of Cable domain object to WireViz dictionary format."""
     c = Cable(
-        designator="W1",
-        wire_count=3,
-        wire_labels=["A", "B", "C"],
-        category="bundle",
-        gauge=0.5,
-        notes="Cable Note"
+        designator="W1", wire_count=3, wire_labels=["A", "B", "C"], category="bundle", gauge=0.5, notes="Cable Note"
     )
     d = cable_to_dict(c)
-    
-    assert d['wirecount'] == 3
-    assert d['gauge'] == 0.5
-    assert d['wirelabels'] == ["A", "B", "C"]
+
+    assert d["wirecount"] == 3
+    assert d["gauge"] == 0.5
+    assert d["wirelabels"] == ["A", "B", "C"]
+
 
 def test_connection_to_list():
     """Test conversion of Connection domain object to WireViz connection list format."""
     c = Connection(
-        from_designator="J1",
-        from_pin="1",
-        to_designator="J2",
-        to_pin="2",
-        via_cable="W1",
-        via_pin=1,
-        net_name="Net1"
+        from_designator="J1", from_pin="1", to_designator="J2", to_pin="2", via_cable="W1", via_pin=1, net_name="Net1"
     )
-    l = connection_to_list(c)
-    
-    assert len(l) == 3
-    assert l[0] == {"J1": "1"}
-    assert l[1] == {"W1": 1}
-    assert l[2] == {"J2": "2"}
+    result = connection_to_list(c)
+
+    assert len(result) == 3
+    assert result[0] == {"J1": "1"}
+    assert result[1] == {"W1": 1}
+    assert result[2] == {"J2": "2"}
 
 
 # --- _clean_dict edge cases ---
+
 
 def test_clean_dict_preserves_zero():
     """Zero is a valid value and must not be stripped."""
@@ -97,18 +96,19 @@ def test_clean_dict_removes_nested_empty_list():
 
 # --- connector_to_dict edge cases ---
 
+
 def test_connector_to_dict_show_pincount_false():
     """show_pincount=False must appear in output (inverted inclusion logic)."""
     c = Connector(designator="J1", pincount=4, show_pincount=False)
     d = connector_to_dict(c)
-    assert d["show_pincount"] == False
+    assert not d["show_pincount"]
 
 
 def test_connector_to_dict_hide_disconnected_true():
     """hide_disconnected_pins=True must appear in output."""
     c = Connector(designator="J1", pincount=4, hide_disconnected_pins=True)
     d = connector_to_dict(c)
-    assert d["hide_disconnected_pins"] == True
+    assert d["hide_disconnected_pins"]
 
 
 def test_connector_to_dict_no_image():
@@ -128,6 +128,7 @@ def test_connector_to_dict_minimal():
 
 
 # --- cable_to_dict edge cases ---
+
 
 def test_cable_to_dict_wireviz_key_names():
     """Verify WireViz uses 'wirecount' and 'wirelabels', not Python field names."""
@@ -150,12 +151,11 @@ def test_cable_to_dict_no_optional_fields():
 
 # --- connection_to_list type verification ---
 
+
 def test_connection_to_list_pin_types():
     """Connector pins must be str, cable via_pin must be int."""
     c = Connection(
-        from_designator="J1", from_pin="3",
-        to_designator="J2", to_pin="4",
-        via_cable="W1", via_pin=2, net_name="Net"
+        from_designator="J1", from_pin="3", to_designator="J2", to_pin="4", via_cable="W1", via_pin=2, net_name="Net"
     )
     result = connection_to_list(c)
     assert isinstance(result[0]["J1"], str)
@@ -164,6 +164,7 @@ def test_connection_to_list_pin_types():
 
 
 # --- build_yaml_file round-trip ---
+
 
 def test_build_yaml_file_round_trip(tmp_path):
     """YAML file written by build_yaml_file must be parseable and have correct structure."""
@@ -175,10 +176,24 @@ def test_build_yaml_file_round_trip(tmp_path):
         Cable(designator="W001", wire_count=2, wire_labels=["Sig1", "Sig2"], gauge=0.5),
     ]
     connections = [
-        Connection(from_designator="J1-X1", from_pin="1", to_designator="J2", to_pin="1",
-                   via_cable="W001", via_pin=1, net_name="Sig1"),
-        Connection(from_designator="J1-X1", from_pin="2", to_designator="J2", to_pin="2",
-                   via_cable="W001", via_pin=2, net_name="Sig2"),
+        Connection(
+            from_designator="J1-X1",
+            from_pin="1",
+            to_designator="J2",
+            to_pin="1",
+            via_cable="W001",
+            via_pin=1,
+            net_name="Sig1",
+        ),
+        Connection(
+            from_designator="J1-X1",
+            from_pin="2",
+            to_designator="J2",
+            to_pin="2",
+            via_cable="W001",
+            via_pin=2,
+            net_name="Sig2",
+        ),
     ]
 
     yaml_path = str(tmp_path / "test.yaml")

@@ -40,6 +40,9 @@ dependencies = [
     "openpyxl>=3.0",
 ]
 
+[project.optional-dependencies]
+pdf = ["typst"]
+
 [dependency-groups]
 dev = [
     "pytest>=7.0",

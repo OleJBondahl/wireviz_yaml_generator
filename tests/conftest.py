@@ -1,5 +1,4 @@
-import pytest
-from wireviz_yaml_generator.models import NetRow, DesignatorRow, ConnectorRow, CableRow
+from wireviz_yaml_generator.models import CableRow, ConnectorRow, DesignatorRow, NetRow
 
 
 def make_net_row(
@@ -24,9 +23,7 @@ def make_net_row(
     )
 
 
-def make_designator_row(
-    comp_des="J1", conn_des="X1", conn_mpn="MPN-123"
-) -> DesignatorRow:
+def make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-123") -> DesignatorRow:
     return DesignatorRow(comp_des=comp_des, conn_des=conn_des, conn_mpn=conn_mpn)
 
 
@@ -48,9 +45,5 @@ def make_connector_row(
     )
 
 
-def make_cable_row(
-    cable_des="W001", wire_gauge=0.5, length=1000.0, note="Note"
-) -> CableRow:
-    return CableRow(
-        cable_des=cable_des, wire_gauge=wire_gauge, length=length, note=note
-    )
+def make_cable_row(cable_des="W001", wire_gauge=0.5, length=1000.0, note="Note") -> CableRow:
+    return CableRow(cable_des=cable_des, wire_gauge=wire_gauge, length=length, note=note)

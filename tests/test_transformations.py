@@ -1,16 +1,16 @@
 """Unit Tests for Transformations Module."""
 
 import pytest
-from conftest import make_net_row, make_designator_row, make_connector_row, make_cable_row
-from wireviz_yaml_generator.models import NetRow, DesignatorRow, ConnectorRow, CableRow
 from wireviz_yaml_generator.transformations import (
-    process_connectors,
-    process_cables,
-    process_connections,
     generate_bom_data,
     generate_cable_labels,
     generate_wire_labels,
+    process_cables,
+    process_connections,
+    process_connectors,
 )
+
+from conftest import make_cable_row, make_connector_row, make_designator_row, make_net_row
 
 
 @pytest.fixture
@@ -18,28 +18,27 @@ def sample_data():
     """Pytest fixture providing consistent test data for transformation tests."""
     net_rows = [
         make_net_row(net_name="SignalA", pin_1="1", pin_2="1"),
-        make_net_row(net_name="+24V", pin_1="2", pin_2="2")
+        make_net_row(net_name="+24V", pin_1="2", pin_2="2"),
     ]
 
     designator_rows = [
         make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-123"),
-        make_designator_row(comp_des="J2", conn_des="", conn_mpn="MPN-456")
+        make_designator_row(comp_des="J2", conn_des="", conn_mpn="MPN-456"),
     ]
 
     connector_rows = [
         make_connector_row(mpn="MPN-123", mate_mpn="MATE-123", pincount=10),
-        make_connector_row(mpn="MPN-456", mate_mpn="MATE-456", pincount=4)
+        make_connector_row(mpn="MPN-456", mate_mpn="MATE-456", pincount=4),
     ]
 
-    cable_rows = [
-        make_cable_row()
-    ]
+    cable_rows = [make_cable_row()]
     return {
         "net_rows": net_rows,
         "designator_rows": designator_rows,
         "connector_rows": connector_rows,
-        "cable_rows": cable_rows
+        "cable_rows": cable_rows,
     }
+
 
 def test_process_connectors(sample_data):
     """Test connector enrichment with metadata and image resolution."""
@@ -51,20 +50,21 @@ def test_process_connectors(sample_data):
         sample_data["designator_rows"],
         sample_data["connector_rows"],
         available_images=available_images,
-        filter_active=True
+        filter_active=True,
     )
 
     assert len(result) == 2
     # Result is now a list of Connector objects
-    c1 = next(r for r in result if r.designator == 'J1-X1')
+    c1 = next(r for r in result if r.designator == "J1-X1")
     assert c1.mpn == "MATE-123"
     # Verify Image logic
     assert c1.image_src == "../resources/MATE-123.png"
 
-    c2 = next(r for r in result if r.designator == 'J2')
+    c2 = next(r for r in result if r.designator == "J2")
     assert c2.mpn == "MATE-456"
     # Verify Image logic (not in set)
     assert c2.image_src is None
+
 
 def test_process_cables(sample_data):
     """Test cable aggregation and wire label assignment."""
@@ -78,12 +78,14 @@ def test_process_cables(sample_data):
     assert "SignalA" in cable.wire_labels
     assert "+24V" in cable.wire_labels
 
+
 def test_process_connections(sample_data):
     """Test connection transformation and via-pin assignment."""
     result = process_connections(sample_data["net_rows"])
     assert len(result) == 2
     conn1 = result[0]
     assert conn1.from_pin == "1"
+
 
 def test_generate_bom_data(sample_data):
     """Test BOM generation with correct quantity aggregation."""
@@ -92,19 +94,20 @@ def test_generate_bom_data(sample_data):
         sample_data["net_rows"],
         sample_data["designator_rows"],
         sample_data["connector_rows"],
-        sample_data["cable_rows"]
+        sample_data["cable_rows"],
     )
 
     # Check quantities
-    c1 = next(b for b in bom if b['mpn'] == 'MATE-123')
-    assert c1['quantity'] == 1
+    c1 = next(b for b in bom if b["mpn"] == "MATE-123")
+    assert c1["quantity"] == 1
 
     # Check wire mapping logic
-    red_wire = next(b for b in bom if 'Red' in b['mpn'])
-    assert red_wire['quantity'] == 1.0
+    red_wire = next(b for b in bom if "Red" in b["mpn"])
+    assert red_wire["quantity"] == 1.0
 
 
 # --- Critical Ordering Invariant ---
+
 
 def test_cable_connection_ordering_invariant():
     """CRITICAL: wire_labels[i] in Cable must correspond to via_pin=i+1 in Connection.
@@ -154,13 +157,12 @@ def test_cable_connection_ordering_multi_cable():
 
 # --- process_connectors edge cases ---
 
+
 def test_process_connectors_wire_ferrule():
     """When pin_mpn contains 'Wire Ferrule', special flags must be set."""
     net_rows = [make_net_row(comp_des_1="J1", conn_des_1="X1")]
     designator_rows = [make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-F")]
-    connector_rows = [
-        make_connector_row(mpn="MPN-F", mate_mpn="MATE-F", pin_mpn="Wire Ferrule DIN 0.5mm2")
-    ]
+    connector_rows = [make_connector_row(mpn="MPN-F", mate_mpn="MATE-F", pin_mpn="Wire Ferrule DIN 0.5mm2")]
 
     result = process_connectors(net_rows, designator_rows, connector_rows, set(), filter_active=True)
 
@@ -227,20 +229,17 @@ def test_process_connectors_image_resolution():
     designator_rows = [make_designator_row(comp_des="J1", conn_des="X1", conn_mpn="MPN-123")]
     connector_rows = [make_connector_row(mpn="MPN-123", mate_mpn="MATE-IMG")]
 
-    result_with = process_connectors(
-        net_rows, designator_rows, connector_rows, {"MATE-IMG.png"}, filter_active=True
-    )
+    result_with = process_connectors(net_rows, designator_rows, connector_rows, {"MATE-IMG.png"}, filter_active=True)
     assert result_with[0].image_src == "../resources/MATE-IMG.png"
     assert result_with[0].image_caption == "ISO view"
 
-    result_without = process_connectors(
-        net_rows, designator_rows, connector_rows, set(), filter_active=True
-    )
+    result_without = process_connectors(net_rows, designator_rows, connector_rows, set(), filter_active=True)
     assert result_without[0].image_src is None
     assert result_without[0].image_caption is None
 
 
 # --- Designator format ---
+
 
 def test_connection_designator_format_with_conn_des():
     """Designator is '{comp_des}-{conn_des}' when conn_des is non-empty."""
@@ -259,6 +258,7 @@ def test_connection_designator_format_without_conn_des():
 
 
 # --- Cable gauge/notes lookup ---
+
 
 def test_process_cables_gauge_and_notes_from_cable_rows():
     """Gauge and notes are looked up from cable_rows by cable_des."""
@@ -281,6 +281,7 @@ def test_process_cables_missing_cable_row():
 
 
 # --- BOM wire color and quantity ---
+
 
 def test_bom_wire_color_classification():
     """Wire color: '24V' -> Red, 'gnd' -> Black, anything else -> White."""
@@ -320,6 +321,7 @@ def test_bom_wire_quantity_calculation():
 
 # --- Cable labels ---
 
+
 def test_generate_cable_labels_format():
     """Cable labels use '{comp_des}-{conn_des} : {cable_des}' format."""
     net_rows = [
@@ -348,11 +350,13 @@ def test_generate_cable_labels_deduplication():
 
 # --- Wire labels ---
 
+
 def test_generate_wire_labels_format():
     """Wire labels have header, cable group headers, and two lines per wire."""
     net_rows = [
-        make_net_row(cable_des="W001", comp_des_1="J1", conn_des_1="X1", pin_1="1",
-                     comp_des_2="J2", conn_des_2="", pin_2="5"),
+        make_net_row(
+            cable_des="W001", comp_des_1="J1", conn_des_1="X1", pin_1="1", comp_des_2="J2", conn_des_2="", pin_2="5"
+        ),
     ]
     result = generate_wire_labels(net_rows)
 
@@ -378,6 +382,7 @@ def test_generate_wire_labels_grouped_by_cable():
 
 
 # --- Empty input ---
+
 
 def test_process_connectors_empty_input():
     """Empty net_rows with filter_active=True produces no connectors."""
