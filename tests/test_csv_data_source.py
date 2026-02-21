@@ -204,12 +204,12 @@ def test_empty_cable_des_raises_by_default(tmp_path):
 
 
 def test_auto_generate_cable_des(tmp_path):
-    """Empty cable_des values get W_AUTO_001, W_AUTO_002."""
+    """Empty cable_des values get W001, W002."""
     csv = _write_csv(tmp_path, f"{REQUIRED_HEADER}\n,J1,X1,1,J2,,1,Sig\n,J3,,1,J4,,1,Other\n")
     ds = CsvDataSource(csv, auto_generate_cable_des=True)
     rows = ds.load_net_table()
-    assert rows[0].cable_des == "W_AUTO_001"
-    assert rows[1].cable_des == "W_AUTO_002"
+    assert rows[0].cable_des == "W001"
+    assert rows[1].cable_des == "W002"
 
 
 def test_auto_generate_preserves_existing(tmp_path):
@@ -218,14 +218,14 @@ def test_auto_generate_preserves_existing(tmp_path):
     ds = CsvDataSource(csv, auto_generate_cable_des=True)
     rows = ds.load_net_table()
     assert rows[0].cable_des == "W001"
-    assert rows[1].cable_des == "W_AUTO_001"
+    assert rows[1].cable_des == "W001"
 
 
 def test_auto_generate_check_existence(tmp_path):
     """Auto-generated designators visible via check_cable_existence."""
     csv = _write_csv(tmp_path, f"{REQUIRED_HEADER}\n,J1,X1,1,J2,,1,Sig\n")
     ds = CsvDataSource(csv, auto_generate_cable_des=True)
-    assert ds.check_cable_existence("W_AUTO_001") is True
+    assert ds.check_cable_existence("W001") is True
     assert ds.check_cable_existence("W999") is False
 
 
@@ -236,7 +236,7 @@ def test_auto_generate_cable_table(tmp_path):
     ds = CsvDataSource(csv, auto_generate_cable_des=True)
     result = ds.load_cable_table()
     assert len(result) == 1
-    assert result[0].cable_des == "W_AUTO_001"
+    assert result[0].cable_des == "W001"
 
 
 def test_whitespace_cable_des_treated_as_empty(tmp_path):
@@ -249,7 +249,7 @@ def test_whitespace_cable_des_treated_as_empty(tmp_path):
 def test_auto_generate_end_to_end(tmp_path):
     """Full pipeline: CsvDataSource with auto_generate → WorkflowManager → valid YAML.
 
-    Each empty cable_des row gets its own unique cable, so W_AUTO_001 has wirecount=1.
+    Each empty cable_des row gets its own unique cable, so W001 has wirecount=1.
     """
     content = (
         f"{FULL_HEADER}\n"
@@ -263,13 +263,13 @@ def test_auto_generate_end_to_end(tmp_path):
 
     ds = CsvDataSource(csv_path, auto_generate_cable_des=True)
     wm = WorkflowManager(ds)
-    wm.run_yaml_workflow(cable_filter="W_AUTO_001", yaml_filepath=yaml_path, available_images=set())
+    wm.run_yaml_workflow(cable_filter="W001", yaml_filepath=yaml_path, available_images=set())
 
     with open(yaml_path, encoding="utf-8") as f:
         data = yaml.safe_load(f.read())
 
-    assert "W_AUTO_001" in data["cables"]
-    assert data["cables"]["W_AUTO_001"]["wirecount"] == 1
+    assert "W001" in data["cables"]
+    assert data["cables"]["W001"]["wirecount"] == 1
     assert "connectors" in data
     assert "connections" in data
 

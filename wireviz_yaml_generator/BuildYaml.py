@@ -51,7 +51,8 @@ def connector_to_dict(c: Connector) -> dict[str, Any]:
     """
     d = {
         "mpn": c.mpn,
-        "pincount": c.pincount,
+        "pins": c.pins,
+        "pincount": c.pincount if not c.pins else None,
         # Only include flags if they deviate from default to reduce noise
         "show_pincount": c.show_pincount if not c.show_pincount else None,
         "hide_disconnected_pins": c.hide_disconnected_pins if c.hide_disconnected_pins else None,

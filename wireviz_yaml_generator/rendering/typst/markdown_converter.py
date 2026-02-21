@@ -32,7 +32,7 @@ def markdown_to_typst_title(
         print(f"Warning: {md_path} not found, skipping title page.")
         return ""
 
-    typst_lines = _convert_lines(lines, centered=True)
+    typst_lines = _convert_lines(lines, centered=True, outlined=False)
 
     if notice:
         typst_lines.append(_notice_block(notice))
@@ -74,11 +74,20 @@ _IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)(?:\{width=(\d+%?)\})?")
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 
 
+def _heading(level: int, text: str, outlined: bool) -> str:
+    """Emit a Typst heading, optionally excluded from the outline."""
+    converted = _convert_inline(text)
+    if outlined:
+        return f"{'=' * level} {converted}"
+    return f"#heading(level: {level}, outlined: false)[{converted}]"
+
+
 def _convert_lines(
     lines: list[str],
     *,
     centered: bool = False,
     image_root: str | None = None,
+    outlined: bool = True,
 ) -> list[str]:
     """Convert markdown lines to Typst markup."""
     typst_lines: list[str] = []
@@ -106,21 +115,21 @@ def _convert_lines(
                 typst_lines.extend(_flush_table(table_rows))
                 in_table = False
                 table_rows = []
-            typst_lines.append(f"=== {_convert_inline(content[4:])}")
+            typst_lines.append(_heading(3, content[4:], outlined))
             continue
         if content.startswith("## "):
             if in_table:
                 typst_lines.extend(_flush_table(table_rows))
                 in_table = False
                 table_rows = []
-            typst_lines.append(f"== {_convert_inline(content[3:])}")
+            typst_lines.append(_heading(2, content[3:], outlined))
             continue
         if content.startswith("# "):
             if in_table:
                 typst_lines.extend(_flush_table(table_rows))
                 in_table = False
                 table_rows = []
-            typst_lines.append(f"= {_convert_inline(content[2:])}")
+            typst_lines.append(_heading(1, content[2:], outlined))
             continue
 
         # Images

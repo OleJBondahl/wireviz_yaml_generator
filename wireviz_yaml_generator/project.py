@@ -52,9 +52,14 @@ class Project:
         csv: str | None = None,
         auto_generate_cable_des: bool = False,
         # Cable selection
+        cable_prefix: str = "W",
         cable_start: int = 0,
         cable_end: int = 50,
         skip_cables: list[int] | None = None,
+        # Pin ordering
+        pins_last: list[str] | None = None,
+        # Display
+        cable_titles: dict[str, str] | None = None,
         # Output directories
         yaml_dir: str = "drawings/src",
         drawings_dir: str = "drawings/harness",
@@ -76,6 +81,9 @@ class Project:
         self._db = db
         self._csv = csv
         self._auto_generate_cable_des = auto_generate_cable_des
+        self._cable_prefix = cable_prefix
+        self._pins_last = pins_last
+        self._cable_titles = cable_titles or {}
 
         self.cable_start = cable_start
         self.cable_end = cable_end
@@ -137,7 +145,7 @@ class Project:
 
             yaml_filepath = str(Path(self.yaml_dir) / f"{cable_filter}.yaml")
 
-            workflow.run_yaml_workflow(cable_filter, yaml_filepath, available_images)
+            workflow.run_yaml_workflow(cable_filter, yaml_filepath, available_images, pins_last=self._pins_last)
 
             if wireviz_executable:
                 svg_path = str(Path(self.drawings_dir) / f"{cable_filter}.svg")
@@ -175,11 +183,19 @@ class Project:
             from wireviz_yaml_generator.csv_data_source import CsvDataSource
 
             assert self._csv is not None
-            return CsvDataSource(self._csv, auto_generate_cable_des=self._auto_generate_cable_des)
+            return CsvDataSource(
+                self._csv,
+                auto_generate_cable_des=self._auto_generate_cable_des,
+                cable_prefix=self._cable_prefix,
+            )
 
     def _build_cable_filters(self) -> list[str]:
         """Build the list of cable designators to process."""
-        return [f"W{i:03d}" for i in range(self.cable_start, self.cable_end + 1) if i not in self.skip_cables]
+        return [
+            f"{self._cable_prefix}{i:03d}"
+            for i in range(self.cable_start, self.cable_end + 1)
+            if i not in self.skip_cables
+        ]
 
     def _get_available_images(self, resource_path: Path) -> set[str]:
         """Scan a directory for available connector image files."""
@@ -218,7 +234,10 @@ class Project:
 
         # Diagram pages
         for cable_des, svg_path in svg_paths:
-            compiler.add_diagram_page(cable_des, svg_path)
+            title = cable_des
+            if cable_des in self._cable_titles:
+                title = f"{cable_des} ({self._cable_titles[cable_des]})"
+            compiler.add_diagram_page(title, svg_path)
 
         # Ensure output directory exists
         Path(pdf_path).parent.mkdir(parents=True, exist_ok=True)

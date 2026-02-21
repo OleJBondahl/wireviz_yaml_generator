@@ -35,6 +35,7 @@ class Connector:
     designator: str
     mpn: str | None = None
     pincount: int | None = None
+    pins: list[str] | None = None
     description: str | None = None
     manufacturer: str | None = None
     image_src: str | None = None

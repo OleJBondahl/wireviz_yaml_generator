@@ -208,8 +208,8 @@ class HarnessDocCompiler:
         svg_rel = self._rel_path(page.svg_path)
         return f"""
 #block(breakable: false)[
-  === Cable nr: {page.title}
-  #align(left)[Length of wires:]
+  === {page.title}
+  #align(left)[Length:]
   #image("{svg_rel}", width: 100%)
 ]
 #v(2cm)

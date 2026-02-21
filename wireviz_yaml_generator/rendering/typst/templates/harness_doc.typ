@@ -8,6 +8,8 @@
   body
 ) = {
   set page(
+    margin: (top: 5cm, bottom: 2cm, left: 1.5cm, right: 1.5cm),
+    header-ascent: 30%,
     header: grid(
       columns: (1fr, auto, 1fr),
       align: (left+bottom, center+bottom, right+bottom),

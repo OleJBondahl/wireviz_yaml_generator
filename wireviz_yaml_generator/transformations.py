@@ -191,6 +191,67 @@ def process_connections(net_rows: list[NetRow]) -> list[Connection]:
     return connection_data
 
 
+def _to_pin_value(pin: str) -> int | str:
+    """Convert a pin name to int if purely numeric, else keep as string.
+
+    WireViz converts numeric pins in connections to int via its expand()
+    function, so connector pin definitions must use the same type.
+    """
+    try:
+        return int(pin)
+    except ValueError:
+        return pin
+
+
+def _pin_sort_key(
+    pin: int | str,
+    pins_last: list[str] | None = None,
+) -> tuple[int, list[Any]]:
+    """Sort key that places pins matching *pins_last* patterns after all others."""
+    s = str(pin)
+    if pins_last:
+        for pattern in pins_last:
+            if pattern in s:
+                return (1, _natural_sort_key(s))
+    return (0, _natural_sort_key(s))
+
+
+def fill_missing_connectors(
+    connectors: list[Connector],
+    connections: list[Connection],
+    pins_last: list[str] | None = None,
+) -> list[Connector]:
+    """Add minimal connector entries for designators referenced in connections but missing from connectors.
+
+    WireViz requires all connector designators to be declared with at least a
+    pincount. When no catalog data is available, this creates entries with
+    pins derived from the unique pins used in connections.
+
+    Args:
+        pins_last: Pin name substrings that should sort to the end
+                   (e.g. ``["PE"]`` places protective-earth pins last).
+    """
+    existing = {c.designator for c in connectors}
+
+    # Collect unique pins per designator from connections
+    pin_sets: dict[str, set[str]] = {}
+    for conn in connections:
+        pin_sets.setdefault(conn.from_designator, set()).add(conn.from_pin)
+        pin_sets.setdefault(conn.to_designator, set()).add(conn.to_pin)
+
+    missing = sorted(pin_sets.keys() - existing, key=_natural_sort_key)
+    return connectors + [
+        Connector(
+            designator=d,
+            pins=sorted(
+                [_to_pin_value(p) for p in pin_sets[d]],
+                key=lambda p: _pin_sort_key(p, pins_last),
+            ),
+        )
+        for d in missing
+    ]
+
+
 def generate_bom_data(
     net_rows: list[NetRow],
     designator_rows: list[DesignatorRow],

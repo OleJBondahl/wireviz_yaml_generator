@@ -15,7 +15,6 @@ REQUIRED_COLUMNS = frozenset(
         "comp_des_2",
         "conn_des_2",
         "pin_2",
-        "net_name",
     }
 )
 
@@ -27,13 +26,13 @@ class CsvDataSource:
     Data is parsed once at construction time and served from memory.
 
     Required columns (must be present as headers):
-        cable_des, comp_des_1, conn_des_1, pin_1, comp_des_2, conn_des_2, pin_2, net_name
+        cable_des, comp_des_1, conn_des_1, pin_1, comp_des_2, conn_des_2, pin_2
 
     Empty-value behavior:
         cable_des       — must be non-empty unless auto_generate_cable_des=True
         comp_des_1/2    — required (non-empty)
         pin_1/2         — required (non-empty)
-        net_name        — required (non-empty)
+        net_name        — optional (defaults to "" if column absent)
         conn_des_1/2    — can be empty (component has no sub-connector)
         conn_mpn_1/2    — can be empty/omitted (no designator entry for that side)
         pincount, mate_mpn, pin_mpn — can be empty/omitted (connector skipped in catalog)
@@ -41,7 +40,13 @@ class CsvDataSource:
         conn_description, conn_manufacturer, cable_note — can be empty/omitted (defaults to "")
     """
 
-    def __init__(self, csv_filepath: str, *, auto_generate_cable_des: bool = False) -> None:
+    def __init__(
+        self,
+        csv_filepath: str,
+        *,
+        auto_generate_cable_des: bool = False,
+        cable_prefix: str = "W",
+    ) -> None:
         path = Path(csv_filepath)
         if not path.exists():
             raise DataSourceError(f"CSV file not found: {csv_filepath}")
@@ -67,6 +72,7 @@ class CsvDataSource:
             raise DataSourceError(f"CSV file has no data rows: {csv_filepath}")
 
         auto_counter = 0
+        prev_comp_des = None
         for row in self._rows:
             cable_des = row.get("cable_des", "").strip()
             if not cable_des:
@@ -74,10 +80,15 @@ class CsvDataSource:
                     raise DataSourceError(
                         "Row has empty 'cable_des' value. Set auto_generate_cable_des=True to auto-assign designators."
                     )
-                auto_counter += 1
-                row["cable_des"] = f"W_AUTO_{auto_counter:03d}"
+                # Group consecutive rows with the same comp_des_1 under one cable
+                comp_des = row.get("comp_des_1", "").strip()
+                if comp_des != prev_comp_des:
+                    auto_counter += 1
+                    prev_comp_des = comp_des
+                row["cable_des"] = f"{cable_prefix}{auto_counter:03d}"
             else:
                 row["cable_des"] = cable_des
+                prev_comp_des = None
 
         self._columns = columns
 
@@ -103,7 +114,7 @@ class CsvDataSource:
                 comp_des_2=r["comp_des_2"],
                 conn_des_2=r["conn_des_2"],
                 pin_2=r["pin_2"],
-                net_name=r["net_name"],
+                net_name=r.get("net_name", ""),
             )
             for r in rows
         ]
