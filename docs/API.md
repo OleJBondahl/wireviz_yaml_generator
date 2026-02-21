@@ -93,6 +93,20 @@ A single denormalized CSV file where each row represents one wire connection wit
 | `length` | Cable length in mm |
 | `cable_note` | Construction note |
 
+**Empty-value behavior:**
+
+| Column | Can be empty? | Effect when empty |
+|---|---|---|
+| `cable_des` | Only if `auto_generate_cable_des=True` | Auto-assigned `W_AUTO_001`, `W_AUTO_002`, etc. |
+| `comp_des_1/2` | No | Required |
+| `pin_1/2` | No | Required |
+| `net_name` | No | Required |
+| `conn_des_1/2` | Yes | No sub-connector |
+| `conn_mpn_1/2` | Yes | No designator entry for that side |
+| `pincount`, `mate_mpn`, `pin_mpn` | Yes | Connector skipped in catalog |
+| `wire_gauge`, `length` | Yes | Cable skipped in cable table |
+| `conn_description`, `conn_manufacturer`, `cable_note` | Yes | Defaults to `""` |
+
 **Deduplication rules:**
 - Connector catalog columns (`pincount` through `conn_manufacturer`) only need to be specified on the first row where a given MPN appears.
 - `load_designator_table()` extracts unique `(comp_des, conn_des, conn_mpn)` triples from both sides.
@@ -105,9 +119,13 @@ A single denormalized CSV file where each row represents one wire connection wit
 from csv_data_source import CsvDataSource
 from workflow_manager import WorkflowManager
 
+# Explicit cable designators
 ds = CsvDataSource("path/to/input.csv")
 wm = WorkflowManager(ds)
 wm.run_yaml_workflow("W001", "output/W001.yaml", available_images=set())
+
+# Auto-generate cable designators for rows with empty cable_des
+ds = CsvDataSource("path/to/input.csv", auto_generate_cable_des=True)
 ```
 
 See `examples/example_input.csv` for a sample file.
@@ -380,10 +398,12 @@ Raises `DatabaseError` (subclass of `WireVizError`) on SQLite failures.
 
 ```python
 class CsvDataSource:
-    def __init__(self, csv_filepath: str): ...
+    def __init__(self, csv_filepath: str, *, auto_generate_cable_des: bool = False): ...
 ```
 
-Raises `DataSourceError` (subclass of `WireVizError`) on missing file, empty CSV, or missing required columns.
+When `auto_generate_cable_des=True`, rows with empty `cable_des` are assigned unique designators (`W_AUTO_001`, `W_AUTO_002`, ...). When `False` (default), empty `cable_des` raises `DataSourceError`.
+
+Raises `DataSourceError` (subclass of `WireVizError`) on missing file, empty CSV, missing required columns, or empty `cable_des` (when `auto_generate_cable_des=False`).
 
 ### Orchestration (`src/workflow_manager.py`)
 

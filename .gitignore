@@ -213,3 +213,7 @@ docs/_site/
 docx/
 _site/
 **/*.quarto_ipynb
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/

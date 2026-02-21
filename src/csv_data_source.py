@@ -25,9 +25,23 @@ class CsvDataSource:
 
     Each CSV row represents one wire connection with optional inline connector/cable metadata.
     Data is parsed once at construction time and served from memory.
+
+    Required columns (must be present as headers):
+        cable_des, comp_des_1, conn_des_1, pin_1, comp_des_2, conn_des_2, pin_2, net_name
+
+    Empty-value behavior:
+        cable_des       — must be non-empty unless auto_generate_cable_des=True
+        comp_des_1/2    — required (non-empty)
+        pin_1/2         — required (non-empty)
+        net_name        — required (non-empty)
+        conn_des_1/2    — can be empty (component has no sub-connector)
+        conn_mpn_1/2    — can be empty/omitted (no designator entry for that side)
+        pincount, mate_mpn, pin_mpn — can be empty/omitted (connector skipped in catalog)
+        wire_gauge, length — can be empty/omitted (cable skipped in cable table)
+        conn_description, conn_manufacturer, cable_note — can be empty/omitted (defaults to "")
     """
 
-    def __init__(self, csv_filepath: str) -> None:
+    def __init__(self, csv_filepath: str, *, auto_generate_cable_des: bool = False) -> None:
         path = Path(csv_filepath)
         if not path.exists():
             raise DataSourceError(f"CSV file not found: {csv_filepath}")
@@ -51,6 +65,19 @@ class CsvDataSource:
 
         if not self._rows:
             raise DataSourceError(f"CSV file has no data rows: {csv_filepath}")
+
+        auto_counter = 0
+        for row in self._rows:
+            cable_des = row.get("cable_des", "").strip()
+            if not cable_des:
+                if not auto_generate_cable_des:
+                    raise DataSourceError(
+                        "Row has empty 'cable_des' value. Set auto_generate_cable_des=True to auto-assign designators."
+                    )
+                auto_counter += 1
+                row["cable_des"] = f"W_AUTO_{auto_counter:03d}"
+            else:
+                row["cable_des"] = cable_des
 
         self._columns = columns
 
